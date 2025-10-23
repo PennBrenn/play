@@ -1,0 +1,22 @@
+[
+  {
+    "real": "Pick a number between 1 and 10.",
+    "imposter": "Pick a number between 10 and 20."
+  },
+  {
+    "real": "What color is the sky?",
+    "imposter": "What color is grass?"
+  },
+  {
+    "real": "How many hours do you sleep?",
+    "imposter": "How many naps do you take?"
+  },
+  {
+    "real": "Name a popular fruit.",
+    "imposter": "Name a rare fruit."
+  },
+  {
+    "real": "Say a word that starts with 'A'.",
+    "imposter": "Say a word that ends with 'A'."
+  }
+]
