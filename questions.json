@@ -1,8 +1,10 @@
 {
   "number": [
-    { "real": "How many days in a week?", "imposter": "How many days in a month?" }
+    { "real": "How many planets are in our solar system?", "imposter": "How many moons does Earth have?" },
+    { "real": "How many stripes on the US flag?", "imposter": "How many stars on the US flag?" }
   ],
   "answer": [
-    { "real": "Name a color of the rainbow", "imposter": "Name a planet" }
+    { "real": "Name something that can fly.", "imposter": "Name something that can swim." },
+    { "real": "Say a color found on a rainbow.", "imposter": "Say a color not found on a rainbow." }
   ]
 }
