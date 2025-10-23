@@ -3,9 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>That one who has a diffrent queston imposter game | PennBrennFun </title>
-<meta name="description" content="Both phrase and number questons. Who has a diffrent question?">
-<link rel="icon" href="play.png" type="image/png">
+<title>Imposter Q — Party Game</title>
 <style>
   :root {
     --bg: #0b0f14;
@@ -28,8 +26,8 @@
     background: var(--panel); border-radius: 16px; padding: 24px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
-  h1 { font-size: 22px; margin-top: 0; }
-  p.lead { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  h1 { font-size: 24px; margin-top: 0; }
+  p.lead { color: var(--muted); font-size: 14px; margin-top: 4px; line-height: 1.5; }
 
   label { font-size: 14px; color: var(--muted); }
   select {
@@ -87,7 +85,16 @@
 <div class="wrap">
   <div class="card">
     <h1>Imposter Q</h1>
-    <p class="lead">Dark, minimal party game using <code>questions.json</code>.</p>
+    <p class="lead">
+      Each player gets a question and answers it in their head.<br>
+      Pass the device around.<br><br>
+      When everyone gets their question, they go around answering.<br>
+      <b>DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED.</b><br><br>
+      Then the real question is shown. Players guess who the imposter is.<br>
+      <b>Justify your answer — even if you’re the imposter.</b><br><br>
+      Once the imposter is revealed, everyone shares their question.<br>
+      A moderator can view the real and imposter questions at the end.
+    </p>
 
     <!-- Setup -->
     <section id="setup">
@@ -111,7 +118,6 @@
       <div style="margin-top:16px">
         <button id="startBtn">Start Game</button>
       </div>
-      <p class="note">Each player gets a question, they will answer it in their head. Pass the device around.<br>When everyone gets their queston, they will go around answering.<br><b>DO NOT TALK UNTIL AFTER THE REAL QUESTON IS SAID</b><br>Then the real queston is said. People may begin guessing who is the imposter now.<br><b>Justify your answer even if youre the imposter.</b><br>When the group finds out who had the fake queston, everyone will say their queston.<br>A moderator can view the question once everyone got their queston.</p>
     </section>
 
     <!-- Player Phase -->
@@ -122,19 +128,18 @@
       </div>
       <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
         <button id="showQ">Show my question</button>
-        <button id="hideQ" class="ghost hidden">Hide my question</button>
         <button id="nextBtn" class="ghost hidden">Next player</button>
       </div>
       <div class="note" id="progressNote"></div>
       <div style="margin-top:16px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
-        <button id="revealBtn" class="ghost hidden">Reveal Final</button>
+        <button id="revealBtn" class="ghost hidden">Reveal Questions</button>
         <button id="restart1" class="danger">Restart</button>
       </div>
     </section>
 
     <!-- Reveal -->
     <section id="reveal" class="hidden center">
-      <div class="big">Final Reveal</div>
+      <div class="big">Reveal Questions</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
         <button id="showReal">Show Real Question</button>
         <button id="showFake">Show Imposter Question</button>
@@ -143,38 +148,38 @@
         <div id="finalQ" class="question-text">Press a button to reveal.</div>
       </div>
       <div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-        <button id="voteBtn" class="ghost">Start Voting</button>
         <button id="restart2" class="danger">Restart</button>
       </div>
-    </section>
-
-    <!-- Voting -->
-    <section id="voting" class="hidden center">
-      <div class="big">Who is the imposter?</div>
-      <div id="voteList" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:12px"></div>
-      <div class="note">Tap a player to vote locally.</div>
-      <button id="finishBtn" style="margin-top:12px">Reveal Imposters</button>
     </section>
   </div>
 </div>
 
 <script>
-const FILE_NAME = "questions.json";
-
-const fallbackData = {
+// -----------------------------
+// Embedded question bank
+// -----------------------------
+const data = {
   number: [
     { real: "How many legs does a spider have?", imposter: "How many legs does an ant have?" },
-    { real: "How many hours in a day?", imposter: "How many days in a week?" }
+    { real: "How many continents are there?", imposter: "How many oceans are there?" },
+    { real: "How many days in a leap year?", imposter: "How many months in a year?" },
+    { real: "How many stripes on the US flag?", imposter: "How many stars on the US flag?" },
+    { real: "How many bones are in the human body?", imposter: "How many muscles are in the human body?" }
   ],
   answer: [
+    { real: "Name something that can fly.", imposter: "Name something that can swim." },
+    { real: "Say a color found on a rainbow.", imposter: "Say a color not found on a rainbow." },
     { real: "Name a fruit that is red.", imposter: "Name a vegetable that is red." },
-    { real: "Say a word starting with A.", imposter: "Say a word starting with Z." }
+    { real: "Say a day of the week.", imposter: "Say a month of the year." },
+    { real: "Name an animal you can keep as a pet.", imposter: "Name a wild animal." }
   ]
 };
 
-let data = fallbackData;
+// -----------------------------
+// Game logic
+// -----------------------------
+function pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-// Populate player/imposter dropdowns
 const playersSel = document.getElementById('players');
 for (let i = 2; i <= 12; i++) {
   const o = document.createElement('option');
@@ -197,20 +202,6 @@ function fillImposters() {
 playersSel.addEventListener('change', fillImposters);
 fillImposters();
 
-async function loadData() {
-  try {
-    const res = await fetch(FILE_NAME, { cache: "no-store" });
-    if (res.ok) data = await res.json();
-  } catch (e) {
-    console.warn("Using fallback questions.");
-  }
-}
-
-function pickOne(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// Game state
 let players = 4, imposters = 1, imposterSet = new Set(), current = 0;
 let chosen = { real: "", imposter: "" };
 
@@ -232,7 +223,6 @@ function updatePlayerUI() {
   document.getElementById('statusText').textContent = `Player ${current + 1} — ready?`;
   document.getElementById('prompt').textContent = 'Press “Show my question” when ready.';
   document.getElementById('showQ').classList.remove('hidden');
-  document.getElementById('hideQ').classList.add('hidden');
   document.getElementById('nextBtn').classList.add('hidden');
   document.getElementById('revealBtn').classList.add('hidden');
   document.getElementById('progressNote').textContent = `(${current + 1}/${players})`;
@@ -242,17 +232,12 @@ document.getElementById('showQ').onclick = () => {
   const text = imposterSet.has(current) ? chosen.imposter : chosen.real;
   document.getElementById('prompt').textContent = text;
   document.getElementById('showQ').classList.add('hidden');
-  document.getElementById('hideQ').classList.remove('hidden');
   document.getElementById('nextBtn').classList.remove('hidden');
-};
-document.getElementById('hideQ').onclick = () => {
-  document.getElementById('prompt').textContent = "Hide and pass the device.";
-  document.getElementById('hideQ').classList.add('hidden');
 };
 document.getElementById('nextBtn').onclick = () => {
   current++;
   if (current >= players) {
-    document.getElementById('prompt').textContent = "All players done.";
+    document.getElementById('prompt').textContent = "All players have their question.";
     document.getElementById('nextBtn').classList.add('hidden');
     document.getElementById('revealBtn').classList.remove('hidden');
   } else updatePlayerUI();
@@ -260,48 +245,20 @@ document.getElementById('nextBtn').onclick = () => {
 document.getElementById('revealBtn').onclick = () => showSection('reveal');
 document.getElementById('showReal').onclick = () => document.getElementById('finalQ').textContent = chosen.real;
 document.getElementById('showFake').onclick = () => document.getElementById('finalQ').textContent = chosen.imposter;
-document.getElementById('voteBtn').onclick = () => { showSection('voting'); renderVotes(); };
-document.getElementById('finishBtn').onclick = () => {
-  const sel = voteList.dataset.selection;
-  if (sel == null) return alert("No selection made.");
-  const s = parseInt(sel, 10);
-  const imposters = Array.from(imposterSet).map(i => i + 1).join(', ');
-  alert(`You picked Player ${s + 1}. Imposters were: ${imposters}.`);
-};
 
-function renderVotes() {
-  const c = document.getElementById('voteList');
-  c.innerHTML = "";
-  for (let i = 0; i < players; i++) {
-    const b = document.createElement('button');
-    b.textContent = "Player " + (i + 1);
-    b.className = 'ghost';
-    b.onclick = () => {
-      Array.from(c.children).forEach(btn => btn.style.outline = 'none');
-      b.style.outline = '2px solid var(--accent)';
-      c.dataset.selection = i;
-    };
-    c.appendChild(b);
-  }
-}
+// Restart buttons
+['restart1','restart2'].forEach(id => {
+  document.getElementById(id).onclick = () => location.reload();
+});
 
 function showSection(id) {
-  ['setup','playerFlow','reveal','voting'].forEach(s => {
+  ['setup','playerFlow','reveal'].forEach(s => {
     document.getElementById(s).classList.add('hidden');
   });
   document.getElementById(id).classList.remove('hidden');
 }
 
-// Restart
-['restart1','restart2'].forEach(id => {
-  document.getElementById(id).onclick = () => location.reload();
-});
-
-// Start Game
-document.getElementById('startBtn').onclick = async () => {
-  await loadData();
-  startGame();
-};
+document.getElementById('startBtn').onclick = () => startGame();
 </script>
 </body>
 </html>
