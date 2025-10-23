@@ -1,1 +1,578 @@
-<p>test</p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Who’s the Imposter — Minimal</title>
+<meta name="description" content="Pass-and-play imposter game (Number & Answer modes). Dark, minimal, big text." />
+<style>
+  :root{
+    --bg:#0b0d0f;
+    --panel:#0f1113;
+    --muted:#9aa4ad;
+    --accent:#00d0ff;
+    --text:#ffffff;
+    --danger:#ff5c6c;
+    --glass: rgba(255,255,255,0.03);
+    --pad:18px;
+  }
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+    background:linear-gradient(180deg, var(--bg) 0%, #070809 100%);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .wrap{
+    width:100%;
+    max-width:820px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    padding:24px;
+  }
+  .center{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    align-items:center;
+    text-align:center;
+  }
+
+  h1{
+    margin:0;
+    font-size:26px;
+    letter-spacing:0.6px;
+    font-weight:600;
+  }
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+  }
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+  select,input[type=number]{
+    background:var(--panel);
+    border:1px solid rgba(255,255,255,0.04);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:16px;
+    min-width:120px;
+  }
+  .small{
+    font-size:14px;
+    color:var(--muted);
+  }
+
+  button{
+    appearance:none;
+    border:0;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    font-size:16px;
+    background:linear-gradient(180deg,var(--accent), #00b3d9);
+    color:#021215;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  }
+  button.ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,0.04);
+    box-shadow:none;
+  }
+  button.danger{
+    background:linear-gradient(180deg,var(--danger), #ff3b4e);
+    color:white;
+  }
+
+  .panel{
+    width:100%;
+    background:var(--glass);
+    border-radius:10px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    align-items:center;
+  }
+
+  .big{
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:0.2px;
+  }
+  .questionBox{
+    width:100%;
+    max-width:640px;
+    min-height:140px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    background:rgba(255,255,255,0.02);
+    padding:18px;
+    box-sizing:border-box;
+    text-align:center;
+  }
+  .questionText{
+    font-size:22px;
+    color:var(--text);
+    line-height:1.2;
+    word-break:break-word;
+  }
+
+  .muted{
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  footer{display:flex;justify-content:center;margin-top:6px;gap:10px;flex-wrap:wrap}
+
+  /* Responsive */
+  @media (max-width:520px){
+    h1{font-size:20px}
+    .big{font-size:22px}
+    .questionText{font-size:20px}
+    .wrap{padding:16px}
+    button{width:100%}
+    .controls{flex-direction:column}
+    .panel{padding:14px}
+  }
+
+  /* small admin area */
+  .admin{
+    width:100%;
+    margin-top:6px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .admin input[type=text], .admin textarea{
+    background:rgba(255,255,255,0.02);
+    border-radius:8px;
+    padding:8px 10px;
+    color:var(--text);
+    border:1px solid rgba(255,255,255,0.03);
+    min-width:160px;
+  }
+  .hint{
+    font-size:12px;color:var(--muted)
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="center">
+      <h1>Who’s the Imposter — Pass & Play</h1>
+
+      <!-- Setup -->
+      <div class="panel" id="setupPanel">
+        <div class="controls" style="align-items:center;">
+          <div>
+            <label>Mode</label>
+            <select id="modeSelect">
+              <option value="number">Number (numeric answers)</option>
+              <option value="answer">Answer (phrase answers)</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Players</label>
+            <input id="playersInput" type="number" min="2" max="20" step="1" value="5" />
+          </div>
+
+          <div>
+            <label>Imposters</label>
+            <input id="impostersInput" type="number" min="1" max="4" step="1" value="1" />
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <label class="muted">&nbsp;</label>
+            <button id="startBtn">Start Game</button>
+          </div>
+        </div>
+
+        <div class="muted" style="margin-top:6px;">
+          Two question pairs are selected per session. Each player will see one of those pairs (real or imposter variant).
+        </div>
+      </div>
+
+      <!-- Play area -->
+      <div class="panel" id="playPanel" style="display:none;">
+        <div class="big" id="statusText">Player 1 — Ready?</div>
+
+        <div class="questionBox" id="questionBox">
+          <div class="questionText muted" id="questionText">Press “Show my question” when ready.</div>
+        </div>
+
+        <div class="controls" style="width:100%;justify-content:center;">
+          <button id="showBtn">Show my question</button>
+          <button class="ghost" id="hideBtn" style="display:none;">Hide my question</button>
+        </div>
+
+        <div class="muted" id="turnHint">Hand the device to the next player after hiding your question.</div>
+      </div>
+
+      <!-- End reveal area -->
+      <div class="panel" id="revealPanel" style="display:none;">
+        <div class="big">Session Questions</div>
+
+        <div id="revealArea" style="display:flex;flex-direction:column;gap:10px;width:100%;align-items:center;">
+          <!-- placeholders -->
+        </div>
+
+        <div class="controls" style="margin-top:6px;">
+          <button id="revealRealBtn">Reveal Real Questions</button>
+          <button id="revealImposterBtn" class="ghost" style="display:none;">Reveal Imposter Questions</button>
+        </div>
+
+        <div style="width:100%;display:flex;justify-content:center;margin-top:6px;">
+          <button id="restartBtn" class="danger" style="display:none;">Restart Game</button>
+        </div>
+      </div>
+
+      <!-- Admin: add questions easily -->
+      <div class="panel" style="margin-top:12px;">
+        <div class="big">Add question pair</div>
+        <div class="admin">
+          <select id="adminMode">
+            <option value="number">Number</option>
+            <option value="answer">Answer</option>
+          </select>
+          <input id="realInput" type="text" placeholder="Real question (non-imposter)" />
+          <input id="impostInput" type="text" placeholder="Imposter version" />
+          <button id="addQuestionBtn" class="ghost">Add to list</button>
+        </div>
+        <div class="hint">Example (Number): "What number from 1–10 best describes you?" (real) vs "Pick a number between 1–10 — secretly different answer" (imposter). <span style="display:block;margin-top:6px;">You can always edit the arrays in code later for bulk changes.</span></div>
+      </div>
+
+    </div>
+
+    <footer>
+      <div class="muted">Minimal • Dark • Mobile friendly</div>
+    </footer>
+  </div>
+
+<script>
+/*
+  GAME DATA: easy to edit lists.
+  Each entry is an object: { real: "...", imposter: "..." }
+  Add more items to these arrays for variety.
+*/
+const numberQuestions = [
+  { real: "Pick a number between 1 and 10 that fits you.", imposter: "Pick a number between 1 and 10 (say one quickly)." },
+  { real: "How many hours do you usually sleep (rounded)?", imposter: "How many hours do you sleep? (say a different number)" },
+  { real: "How many times did you exercise this week?", imposter: "How many times did you exercise this week? (pick a low number)" },
+  { real: "On a scale 1–5 how energetic are you today?", imposter: "On a scale 1–5, choose 1 or 5 quickly." },
+  { real: "How many cups of coffee do you drink daily?", imposter: "How many cups of coffee? (choose 0 or 3 quickly)" }
+];
+
+const answerQuestions = [
+  { real: "What's your favorite color?", imposter: "Say a color but try to be vague." },
+  { real: "Name a breakfast food you like.", imposter: "Name any food quickly." },
+  { real: "What do you do first after waking up?", imposter: "Say something short you might do in the morning." },
+  { real: "What's a movie you like?", imposter: "Name a popular movie quickly." },
+  { real: "What's a hobby of yours?", imposter: "Say a hobby you might enjoy, briefly." }
+];
+
+/* ====== State ====== */
+let session = {
+  mode: 'number',
+  players: 5,
+  impostersCount: 1,
+  imposters: [],       // array of imposters (indices, 0-based)
+  selectedPairs: [],   // two chosen question objects for this session
+  playersData: [],     // for each player: {isImposter, chosenPairIndex}
+  currentPlayer: 0,
+  stage: 'setup'       // 'setup'|'inPlay'|'reveals'
+};
+
+/* ====== UI refs ====== */
+const modeSelect = document.getElementById('modeSelect');
+const playersInput = document.getElementById('playersInput');
+const impostersInput = document.getElementById('impostersInput');
+const startBtn = document.getElementById('startBtn');
+
+const setupPanel = document.getElementById('setupPanel');
+const playPanel = document.getElementById('playPanel');
+const revealPanel = document.getElementById('revealPanel');
+
+const statusText = document.getElementById('statusText');
+const questionText = document.getElementById('questionText');
+const showBtn = document.getElementById('showBtn');
+const hideBtn = document.getElementById('hideBtn');
+
+const revealArea = document.getElementById('revealArea');
+const revealRealBtn = document.getElementById('revealRealBtn');
+const revealImposterBtn = document.getElementById('revealImposterBtn');
+const restartBtn = document.getElementById('restartBtn');
+
+const adminMode = document.getElementById('adminMode');
+const realInput = document.getElementById('realInput');
+const impostInput = document.getElementById('impostInput');
+const addQuestionBtn = document.getElementById('addQuestionBtn');
+
+/* ====== Utility ====== */
+function randInt(max){ return Math.floor(Math.random()*max); }
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* ====== Game setup & start ====== */
+startBtn.addEventListener('click', ()=> {
+  const players = parseInt(playersInput.value,10) || 3;
+  let imposters = parseInt(impostersInput.value,10) || 1;
+
+  if(players < 2){ alert('Minimum 2 players.'); return; }
+  // Limit imposters to players-1
+  imposters = Math.min(imposters, Math.max(1, players-1));
+
+  session.mode = modeSelect.value;
+  session.players = players;
+  session.impostersCount = imposters;
+
+  // pick 2 question pairs from chosen pool
+  const pool = (session.mode === 'number') ? numberQuestions : answerQuestions;
+  if(pool.length < 2){
+    alert('Not enough questions in this mode (need at least 2). Add more in the Add-question box or edit the arrays in code.');
+    return;
+  }
+
+  // random select two distinct pairs
+  const poolIndices = shuffle([...Array(pool.length).keys()]);
+  session.selectedPairs = [ pool[poolIndices[0]], pool[poolIndices[1]] ];
+
+  // assign imposters randomly
+  const indices = shuffle([...Array(players).keys()]);
+  session.imposters = indices.slice(0, session.impostersCount);
+
+  // build playersData
+  session.playersData = [];
+  for(let p=0;p<players;p++){
+    const isImp = session.imposters.includes(p);
+    // randomly assign each player to one of the two selected pairs (0 or 1)
+    const pairIndex = Math.random() < 0.5 ? 0 : 1;
+    session.playersData.push({ isImposter: isImp, pairIndex: pairIndex });
+  }
+
+  session.currentPlayer = 0;
+  session.stage = 'inPlay';
+  // UI swap
+  setupPanel.style.display='none';
+  playPanel.style.display='flex';
+  revealPanel.style.display='none';
+  updateTurnUI();
+});
+
+/* ====== Play controls ====== */
+function updateTurnUI(){
+  const i = session.currentPlayer;
+  statusText.textContent = `Player ${i+1} — Ready?`;
+  questionText.textContent = 'Press “Show my question” when ready.';
+  questionText.classList.add('muted');
+  showBtn.style.display='inline-block';
+  hideBtn.style.display='none';
+  showBtn.disabled = false;
+  hideBtn.disabled = false;
+  // ensure focus for quick tap on mobile
+  showBtn.focus();
+}
+
+showBtn.addEventListener('click', ()=> {
+  const i = session.currentPlayer;
+  const pData = session.playersData[i];
+  const pair = session.selectedPairs[pData.pairIndex];
+  if(!pair){
+    questionText.textContent = 'Question unavailable.';
+    return;
+  }
+  // if player is imposter -> show imposter variant, else real variant
+  const q = pData.isImposter ? pair.imposter : pair.real;
+  questionText.textContent = q;
+  questionText.classList.remove('muted');
+  showBtn.style.display='none';
+  hideBtn.style.display='inline-block';
+});
+
+hideBtn.addEventListener('click', ()=> {
+  // move to next player or end
+  session.currentPlayer += 1;
+  if(session.currentPlayer >= session.players){
+    // end of turns -> show reveal panel
+    session.stage = 'reveals';
+    playPanel.style.display='none';
+    revealPanel.style.display='flex';
+    setupPanel.style.display='none';
+    populateRevealPanel();
+    return;
+  }
+  updateTurnUI();
+});
+
+/* ====== Reveal area ====== */
+function populateRevealPanel(){
+  revealArea.innerHTML = ''; // clear
+  // show placeholders for both selected pairs
+  session.selectedPairs.forEach((pair, idx)=>{
+    const card = document.createElement('div');
+    card.style.width='100%';
+    card.style.maxWidth='640px';
+    card.style.background='rgba(255,255,255,0.02)';
+    card.style.padding='12px';
+    card.style.borderRadius='10px';
+    card.style.display='flex';
+    card.style.flexDirection='column';
+    card.style.alignItems='center';
+    card.style.gap='6px';
+
+    const title = document.createElement('div');
+    title.style.fontWeight='700';
+    title.style.fontSize='16px';
+    title.textContent = `Question ${idx+1} (hidden)`;
+
+    const body = document.createElement('div');
+    body.style.fontSize='15px';
+    body.style.color='var(--muted)';
+    body.textContent = 'Real / Imposter versions are hidden.';
+
+    const realEl = document.createElement('div');
+    realEl.className='muted';
+    realEl.style.display='none';
+    realEl.style.fontSize='17px';
+    realEl.style.fontWeight='600';
+    realEl.style.width='100%';
+    realEl.style.textAlign='center';
+    realEl.style.color='var(--text)';
+
+    const impEl = document.createElement('div');
+    impEl.className='muted';
+    impEl.style.display='none';
+    impEl.style.fontSize='17px';
+    impEl.style.fontWeight='600';
+    impEl.style.width='100%';
+    impEl.style.textAlign='center';
+    impEl.style.color='var(--text)';
+
+    realEl.textContent = pair.real;
+    impEl.textContent = pair.imposter;
+
+    card.appendChild(title);
+    card.appendChild(body);
+    card.appendChild(realEl);
+    card.appendChild(impEl);
+
+    // store references for later reveal
+    card.dataset.realShown = 'false';
+    card.dataset.impShown = 'false';
+    revealArea.appendChild(card);
+  });
+
+  // show/hide reveal buttons initial state
+  revealRealBtn.style.display = 'inline-block';
+  revealImposterBtn.style.display = 'none';
+  restartBtn.style.display = 'none';
+}
+
+revealRealBtn.addEventListener('click', ()=>{
+  // reveal all real questions
+  const cards = revealArea.children;
+  for(let c of cards){
+    c.querySelector('div:nth-child(2)').style.display='none'; // hide placeholder body
+    const realEl = c.querySelector('div:nth-child(3)');
+    realEl.style.display='block';
+    c.dataset.realShown = 'true';
+  }
+  revealRealBtn.style.display='none';
+  revealImposterBtn.style.display='inline-block';
+});
+
+revealImposterBtn.addEventListener('click', ()=>{
+  const cards = revealArea.children;
+  for(let c of cards){
+    const impEl = c.querySelector('div:nth-child(4)');
+    impEl.style.display='block';
+    c.dataset.impShown = 'true';
+  }
+  revealImposterBtn.style.display='none';
+  restartBtn.style.display='inline-block';
+});
+
+/* ====== Restart ====== */
+restartBtn.addEventListener('click', resetToSetup);
+
+function resetToSetup(){
+  // reset session
+  session = {
+    mode: 'number',
+    players: 5,
+    impostersCount: 1,
+    imposters: [],
+    selectedPairs: [],
+    playersData: [],
+    currentPlayer: 0,
+    stage: 'setup'
+  };
+  // UI
+  setupPanel.style.display='flex';
+  playPanel.style.display='none';
+  revealPanel.style.display='none';
+  // reset inputs
+  modeSelect.value='number';
+  playersInput.value='5';
+  impostersInput.value='1';
+}
+
+/* ====== Admin: add question pairs at runtime ====== */
+addQuestionBtn.addEventListener('click', ()=>{
+  const m = adminMode.value;
+  const real = (realInput.value || '').trim();
+  const imp = (impostInput.value || '').trim();
+  if(!real || !imp){
+    alert('Fill both Real and Imposter fields.');
+    return;
+  }
+  if(m === 'number'){
+    numberQuestions.push({ real, imposter: imp });
+    alert('Added to Number questions.');
+  } else {
+    answerQuestions.push({ real, imposter: imp });
+    alert('Added to Answer questions.');
+  }
+  // clear
+  realInput.value=''; impostInput.value='';
+});
+
+/* ====== Small input protections ====== */
+playersInput.addEventListener('change', ()=>{
+  let v = parseInt(playersInput.value,10) || 2;
+  if(v < 2) v = 2;
+  if(v > 20) v = 20;
+  playersInput.value = v;
+  // adjust imposters max
+  impostersInput.max = Math.max(1, v-1);
+});
+impostersInput.addEventListener('change', ()=>{
+  let v = parseInt(impostersInput.value,10) || 1;
+  const max = Math.max(1, (parseInt(playersInput.value,10)||2)-1);
+  if(v < 1) v = 1;
+  if(v > max) v = max;
+  impostersInput.value = v;
+});
+
+</script>
+</body>
+</html>
