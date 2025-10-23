@@ -1,217 +1,478 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fun Imposter Game</title>
-  <meta name="description" content="A quick guessing game for friends. One question, one imposter, endless laughter.">
-  <link rel="icon" type="image/png" href="play.png">
-  <style>
-    :root {
-      --bg: #0d0d0d;
-      --text: #f2f2f2;
-      --accent: #4b8bff;
-    }
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-      padding: 20px;
-    }
-    h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
-    }
-    button, select, input {
-      background: var(--accent);
-      color: var(--text);
-      border: none;
-      padding: 12px 20px;
-      margin: 8px;
-      font-size: 1.1em;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover { background: #6ea4ff; }
-    #game, #player-phase, #reveal-phase { display: none; }
-    .question-box {
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 500px;
-      font-size: 1.4em;
-      line-height: 1.4;
-    }
-    .hidden { display: none; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Imposter Q — Minimal Party Game</title>
+<style>
+  :root{
+    --bg:#0b0f14;
+    --panel:#0f1720;
+    --muted:#9aa6b2;
+    --accent:#7ce7ff;
+    --text:#ffffff;
+    --danger:#ff6b6b;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .card{width:100%;max-width:720px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:14px;padding:22px;box-shadow:0 6px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03);}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  h1{font-size:20px;margin:0;font-weight:600;letter-spacing:0.2px}
+  p.lead{margin:0;color:var(--muted);font-size:13px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;align-items:center}
+  label{font-size:13px;color:var(--muted)}
+  select,input{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:var(--text);font-size:16px}
+  button{background:var(--accent);border:none;padding:12px 18px;border-radius:10px;font-weight:600;font-size:16px;cursor:pointer;}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+  .big{font-size:28px;font-weight:700;color:var(--text);text-align:center;margin:18px 0}
+  .center{display:flex;align-items:center;justify-content:center;flex-direction:column}
+  .note{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
+  .question-box{min-height:130px;background:var(--panel);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;}
+  .question-text{font-size:28px;font-weight:700;line-height:1.1}
+  .small{font-size:13px;color:var(--muted)}
+  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:8px;flex-wrap:wrap}
+  .danger{background:var(--danger);color:#fff}
+  .hidden{display:none}
+  @media (max-width:520px){
+    .question-text{font-size:22px}
+    .big{font-size:22px}
+    button{width:100%}
+    .controls{flex-direction:column;align-items:stretch}
+  }
+</style>
 </head>
 <body>
-  <h1>Imposter Game</h1>
+<div class="wrap">
+  <div class="card" role="application" aria-label="Imposter Q party game">
+    <header>
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="1.5" y="1.5" width="21" height="21" rx="6" stroke="rgba(124,231,255,0.18)" stroke-width="1.5"/>
+        <path d="M7 12h10" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M7 8h10" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+      </svg>
+      <div>
+        <h1>Imposter Q</h1>
+        <p class="lead">Minimal, high-contrast party game — dark theme. Single-file UI + JSON question lists.</p>
+      </div>
+    </header>
 
-  <div id="setup">
-    <p>Select game mode:</p>
-    <select id="mode">
-      <option value="number">Number Mode</option>
-      <option value="answer">Answer Mode</option>
-    </select><br>
-    <p>Number of players:</p>
-    <input type="number" id="numPlayers" min="2" max="20" value="4"><br>
-    <p>Number of imposters:</p>
-    <input type="number" id="numImposters" min="1" max="5" value="1"><br>
-    <button id="startGame">Start Game</button>
+    <!-- Setup -->
+    <section id="setup">
+      <div class="controls">
+        <div>
+          <label for="mode">Mode</label><br>
+          <select id="mode" aria-label="Game mode">
+            <option value="number">Number (numeric answers)</option>
+            <option value="answer">Answer (phrase answers)</option>
+          </select>
+        </div>
+        <div>
+          <label for="players">Players</label><br>
+          <select id="players" aria-label="Number of players">
+            <!-- JS will fill -->
+          </select>
+        </div>
+        <div>
+          <label for="imposters">Imposters</label><br>
+          <select id="imposters" aria-label="Number of imposters">
+            <!-- JS will fill -->
+          </select>
+        </div>
+        <div style="flex:1;min-width:160px">
+          <label for="rawBase">Question files base URL</label><br>
+          <input id="rawBase" placeholder="Leave blank to use local ./data/ or set GitHub raw folder URL" />
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button id="startBtn">Start game</button>
+        <button id="manageBtn" class="ghost">Manage question files</button>
+        <div style="margin-left:auto;text-align:right">
+          <div class="small">Files: <span id="fileNames">number_questions.json, answer_questions.json</span></div>
+        </div>
+      </div>
+
+      <p class="note">Each round selects <strong>1 real question</strong> and <strong>1 imposter question</strong> from the chosen mode list. Players who are imposters see the imposter prompt; others see the real prompt.</p>
+    </section>
+
+    <!-- Player flow -->
+    <section id="playerFlow" class="hidden">
+      <div class="center">
+        <div class="big" id="statusText">Player 1 — ready?</div>
+
+        <div class="question-box" id="promptBox">
+          <div id="promptInner" class="question-text">Press "Show my question" when you're ready.</div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button id="showQ">Show my question</button>
+          <button id="hideQ" class="ghost hidden">Hide my question</button>
+          <button id="passNext" class="ghost hidden">Next player</button>
+        </div>
+
+        <div class="note" style="margin-top:12px">When everyone has seen their prompt, press <strong>Reveal final questions</strong> below.</div>
+      </div>
+
+      <div class="footer" style="margin-top:14px">
+        <div class="small">Player <span id="playerIndex">1</span> / <span id="totalPlayers">4</span></div>
+        <div style="display:flex;gap:10px">
+          <button id="revealPhaseBtn" class="ghost hidden">Reveal final questions</button>
+          <button id="restartBtn" class="ghost">Restart</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reveal Phase -->
+    <section id="revealPhase" class="hidden">
+      <div class="center">
+        <div class="big">Final reveal</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+          <button id="showRealBtn">Show real question</button>
+          <button id="showImposterBtn">Show imposter question</button>
+        </div>
+
+        <div class="question-box" style="margin-top:16px">
+          <div id="finalQ" class="question-text">Press a button to reveal.</div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+          <button id="startVoteBtn" class="ghost">Start guessing / voting</button>
+          <button id="replayBtn" class="danger">Restart game</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Voting (simple) -->
+    <section id="voting" class="hidden">
+      <div class="center">
+        <div class="big">Who is the imposter?</div>
+        <div id="voteList" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px"></div>
+        <div class="note" style="margin-top:12px">Players vote by tapping a player card. This is local-only; implement server storage if you need cross-device voting.</div>
+
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <button id="finishBtn" class="ghost">Finish & show who was imposter</button>
+          <button id="restartFinalBtn" class="danger">Restart</button>
+        </div>
+      </div>
+    </section>
+
   </div>
+</div>
 
-  <div id="player-phase">
-    <h2 id="playerLabel">Player 1, ready?</h2>
-    <div class="question-box hidden" id="questionBox"></div>
-    <button id="showBtn">Show My Question</button>
-    <button id="hideBtn" class="hidden">Hide My Question</button>
-  </div>
+<script>
+/*
+  IMPORANT:
+  - Place your JSON files named exactly:
+      number_questions.json
+      answer_questions.json
+    in the same folder as this page (./data/ subfolder also fine) OR set RAW_BASE_URL below to your GitHub raw folder URL
+    e.g. RAW_BASE_URL = "https://raw.githubusercontent.com/username/repo/main/data/"
+  - Each JSON file should be an array of objects with this shape:
+    [
+      { "real": "What is 7 + 3?", "imposter": "What's the number that equals 2 + 9?" },
+      { "real": "How many legs does a spider have?", "imposter": "How many legs does a mosquito have?" },
+      ...
+    ]
+  - For answer mode (phrases), "real" and "imposter" should be phrase answers.
+  - The page will randomly pick 1 object from the chosen file and use its `.real` for honest players and `.imposter` for imposters.
 
-  <div id="reveal-phase">
-    <h2>Everyone answered!</h2>
-    <button id="revealReal">Reveal Real Question</button>
-    <button id="revealImposter" class="hidden">Reveal Imposter Question</button>
-    <div id="finalBox" class="question-box hidden"></div>
-    <button id="restartBtn" class="hidden">Restart Game</button>
-  </div>
+  FILE NAMES (exact): number_questions.json, answer_questions.json
+  Raw base can be blank (use relative paths).
+*/
 
-  <button id="refreshBtn" style="position:fixed;bottom:10px;right:10px;font-size:0.8em;">Refresh Question List</button>
+const RAW_BASE_URL_DEFAULT = ""; // <-- set your GitHub raw folder URL here if you want (e.g. "https://raw.githubusercontent.com/you/repo/main/data/")
+const NUMBER_FILE = "number_questions.json";
+const ANSWER_FILE = "answer_questions.json";
 
-  <script>
-    let allQuestions = [];
-    let gameMode = "number";
-    let numPlayers = 0, numImposters = 0;
-    let imposters = [];
-    let currentPlayer = 1;
-    let realQ = null, impQ = null;
+const fallbackNumber = [
+  {"real":"How many wheels on a tricycle?","imposter":"How many wheels on a bicycle?"},
+  {"real":"How many hours in a day?","imposter":"How many hours in a fortnight?"}
+];
+const fallbackAnswer = [
+  {"real":"Name a color of the sky","imposter":"Name a color of the sea"},
+  {"real":"Say the word 'apple'","imposter":"Say the word 'orange'"}
+];
 
-    // Load questions from JSON and cache in localStorage
-    async function loadQuestions() {
-      try {
-        const res = await fetch('questions.json?_=' + Date.now());
-        const data = await res.json();
-        localStorage.setItem('cachedQuestions', JSON.stringify(data));
-        allQuestions = data;
-        console.log("Loaded questions from GitHub.");
-      } catch (e) {
-        console.warn("Could not fetch remote questions, using cache or default.", e);
-        const cached = localStorage.getItem('cachedQuestions');
-        if (cached) {
-          allQuestions = JSON.parse(cached);
-        } else {
-          allQuestions = [
-            { real: "Pick a number from 1–10.", imposter: "Pick a number from 1–20." },
-            { real: "What color is the sky?", imposter: "What color is grass?" },
-            { real: "How many hours do you sleep?", imposter: "How many naps do you take?" }
-          ];
-        }
+let RAW_BASE_URL = RAW_BASE_URL_DEFAULT;
+document.getElementById('rawBase').value = RAW_BASE_URL;
+
+// DOM refs
+const playersSel = document.getElementById('players');
+const impostersSel = document.getElementById('imposters');
+const modeSel = document.getElementById('mode');
+const startBtn = document.getElementById('startBtn');
+const manageBtn = document.getElementById('manageBtn');
+const setupSec = document.getElementById('setup');
+const playerFlow = document.getElementById('playerFlow');
+const statusText = document.getElementById('statusText');
+const promptInner = document.getElementById('promptInner');
+const showQ = document.getElementById('showQ');
+const hideQ = document.getElementById('hideQ');
+const passNext = document.getElementById('passNext');
+const revealPhaseBtn = document.getElementById('revealPhaseBtn');
+const playerIndexText = document.getElementById('playerIndex');
+const totalPlayersText = document.getElementById('totalPlayers');
+const revealPhase = document.getElementById('revealPhase');
+const showRealBtn = document.getElementById('showRealBtn');
+const showImposterBtn = document.getElementById('showImposterBtn');
+const finalQ = document.getElementById('finalQ');
+const startVoteBtn = document.getElementById('startVoteBtn');
+const voting = document.getElementById('voting');
+const voteList = document.getElementById('voteList');
+const finishBtn = document.getElementById('finishBtn');
+const restartFinalBtn = document.getElementById('restartFinalBtn');
+const restartBtn = document.getElementById('restartBtn');
+const replayBtn = document.getElementById('replayBtn');
+const fileNamesSpan = document.getElementById('fileNames');
+
+fileNamesSpan.textContent = `${NUMBER_FILE}, ${ANSWER_FILE}`;
+
+// fill player counts
+for(let i=2;i<=12;i++){
+  const opt = document.createElement('option'); opt.value = i; opt.textContent = i; playersSel.appendChild(opt);
+}
+playersSel.value = 4;
+function updateImposterOptions(){
+  const players = parseInt(playersSel.value,10);
+  impostersSel.innerHTML = "";
+  for(let i=1;i<players;i++){
+    const opt = document.createElement('option'); opt.value = i; opt.textContent = i; impostersSel.appendChild(opt);
+  }
+  impostersSel.value = Math.min(1, players-1);
+}
+playersSel.addEventListener('change', updateImposterOptions);
+updateImposterOptions();
+
+// state
+let questionsNumber = [];
+let questionsAnswer = [];
+let chosenReal = "";
+let chosenImposter = "";
+let players = 4;
+let imposters = 1;
+let currentPlayer = 0;
+let imposterIndices = new Set();
+let seenBy = []; // store whether each player already saw their prompt
+
+// load base URL input
+document.getElementById('rawBase').addEventListener('input', (e)=> {
+  RAW_BASE_URL = (e.target.value||"").trim();
+});
+
+// fetch JSON files (try raw base, fallback to relative paths, fallback to sample)
+async function loadQuestionFiles(){
+  function tryFetch(url){
+    return fetch(url, {cache: "no-store"}).then(r=>{
+      if(!r.ok) throw new Error("Fetch failed");
+      return r.json();
+    });
+  }
+
+  const candidates = [];
+  if(RAW_BASE_URL) {
+    candidates.push(RAW_BASE_URL + NUMBER_FILE);
+    candidates.push(RAW_BASE_URL + ANSWER_FILE);
+  }
+  // relative locations to try
+  candidates.push('./data/'+NUMBER_FILE);
+  candidates.push('./data/'+ANSWER_FILE);
+  candidates.push('./'+NUMBER_FILE);
+  candidates.push('./'+ANSWER_FILE);
+
+  // We'll attempt to fetch each file separately with sensible fallbacks.
+  async function fetchFile(possiblePaths, fallback){
+    for(const p of possiblePaths){
+      try{
+        const res = await tryFetch(p);
+        return res;
+      }catch(e){
+        // continue
       }
     }
+    return fallback;
+  }
 
-    function startGame() {
-      gameMode = document.getElementById("mode").value;
-      numPlayers = parseInt(document.getElementById("numPlayers").value);
-      numImposters = parseInt(document.getElementById("numImposters").value);
-      if (numImposters >= numPlayers) return alert("Imposters must be fewer than players!");
+  // build lists of possible paths for each file: if raw base provided, try raw base first then local.
+  const numberPaths = [];
+  const answerPaths = [];
+  if(RAW_BASE_URL){
+    numberPaths.push(RAW_BASE_URL + NUMBER_FILE);
+    answerPaths.push(RAW_BASE_URL + ANSWER_FILE);
+  }
+  numberPaths.push('./data/'+NUMBER_FILE, './'+NUMBER_FILE);
+  answerPaths.push('./data/'+ANSWER_FILE, './'+ANSWER_FILE);
 
-      // Choose random question pair
-      const validQs = allQuestions;
-      const chosen = validQs[Math.floor(Math.random() * validQs.length)];
-      realQ = chosen.real;
-      impQ = chosen.imposter;
+  try {
+    questionsNumber = await fetchFile(numberPaths, fallbackNumber);
+    questionsAnswer = await fetchFile(answerPaths, fallbackAnswer);
+  } catch(e){
+    questionsNumber = fallbackNumber;
+    questionsAnswer = fallbackAnswer;
+  }
+}
 
-      // Pick imposters
-      imposters = [];
-      while (imposters.length < numImposters) {
-        let idx = Math.floor(Math.random() * numPlayers) + 1;
-        if (!imposters.includes(idx)) imposters.push(idx);
-      }
+// helper to pick one random item from array
+function pickOne(arr){
+  if(!arr || !arr.length) return null;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
 
-      document.getElementById("setup").style.display = "none";
-      document.getElementById("player-phase").style.display = "block";
-      updatePlayer();
-    }
+function prepareGame(){
+  players = parseInt(playersSel.value,10);
+  imposters = parseInt(impostersSel.value,10);
+  currentPlayer = 0;
+  imposterIndices = new Set();
+  // choose imposters
+  while(imposterIndices.size < imposters){
+    imposterIndices.add(Math.floor(Math.random()*players));
+  }
+  seenBy = Array(players).fill(false);
 
-    function updatePlayer() {
-      document.getElementById("playerLabel").innerText = `Player ${currentPlayer}, ready?`;
-      document.getElementById("questionBox").classList.add("hidden");
-      document.getElementById("showBtn").classList.remove("hidden");
-      document.getElementById("hideBtn").classList.add("hidden");
-    }
+  // choose question pair depending on mode
+  const mode = modeSel.value;
+  const pool = (mode === 'number') ? questionsNumber : questionsAnswer;
+  const picked = pickOne(pool) || {real:"[real question missing]", imposter:"[imposter question missing]"};
+  chosenReal = picked.real;
+  chosenImposter = picked.imposter;
 
-    function showQuestion() {
-      const box = document.getElementById("questionBox");
-      const isImp = imposters.includes(currentPlayer);
-      box.innerText = isImp ? impQ : realQ;
-      box.classList.remove("hidden");
-      document.getElementById("showBtn").classList.add("hidden");
-      document.getElementById("hideBtn").classList.remove("hidden");
-    }
+  // update UI
+  document.getElementById('totalPlayers').textContent = players;
+  document.getElementById('playerIndex').textContent = 1;
+  statusText.textContent = `Player 1 — ready?`;
+  promptInner.textContent = "Press \"Show my question\" when you're ready.";
+  setupSec.classList.add('hidden');
+  playerFlow.classList.remove('hidden');
+  revealPhaseBtn.classList.add('hidden');
+  revealPhase.classList.add('hidden');
+  voting.classList.add('hidden');
+  document.getElementById('playerIndex').textContent = 1;
+  document.getElementById('playerIndex').setAttribute('aria-value', '1');
+}
 
-    function hideQuestion() {
-      const box = document.getElementById("questionBox");
-      box.classList.add("hidden");
-      if (currentPlayer < numPlayers) {
-        currentPlayer++;
-        updatePlayer();
-      } else {
-        endPhase();
-      }
-    }
+startBtn.addEventListener('click', async ()=>{
+  RAW_BASE_URL = (document.getElementById('rawBase').value||"").trim();
+  await loadQuestionFiles();
+  prepareGame();
+});
 
-    function endPhase() {
-      document.getElementById("player-phase").style.display = "none";
-      document.getElementById("reveal-phase").style.display = "block";
-    }
+manageBtn.addEventListener('click', ()=>{
+  alert(
+    "Place the two JSON files in your repo with exact filenames:\n\n" +
+    " - number_questions.json\n - answer_questions.json\n\n" +
+    "Each file is a JSON array of { \"real\": \"...\", \"imposter\": \"...\" }.\n\n" +
+    "Set the RAW base URL (top right) to your GitHub raw folder URL if you want the site to fetch them from GitHub (e.g. https://raw.githubusercontent.com/username/repo/main/data/)."
+  );
+});
 
-    function revealReal() {
-      const finalBox = document.getElementById("finalBox");
-      finalBox.innerText = realQ;
-      finalBox.classList.remove("hidden");
-      document.getElementById("revealReal").classList.add("hidden");
-      document.getElementById("revealImposter").classList.remove("hidden");
-    }
+// Player interactions
+showQ.addEventListener('click', ()=>{
+  // reveal current player's prompt
+  const isImposter = imposterIndices.has(currentPlayer);
+  promptInner.textContent = isImposter ? chosenImposter : chosenReal;
+  showQ.classList.add('hidden');
+  hideQ.classList.remove('hidden');
+  passNext.classList.remove('hidden');
+  // mark seen
+  seenBy[currentPlayer] = true;
+});
 
-    function revealImposter() {
-      const finalBox = document.getElementById("finalBox");
-      finalBox.innerText = impQ;
-      document.getElementById("revealImposter").classList.add("hidden");
-      document.getElementById("restartBtn").classList.remove("hidden");
-    }
+hideQ.addEventListener('click', ()=>{
+  promptInner.textContent = "Hide the screen and pass the device to the next player.";
+  hideQ.classList.add('hidden');
+  showQ.classList.remove('hidden');
+  passNext.classList.remove('hidden');
+});
 
-    function restartGame() {
-      currentPlayer = 1;
-      imposters = [];
-      realQ = impQ = null;
-      document.getElementById("setup").style.display = "block";
-      document.getElementById("player-phase").style.display = "none";
-      document.getElementById("reveal-phase").style.display = "none";
-      document.getElementById("finalBox").classList.add("hidden");
-      document.getElementById("revealReal").classList.remove("hidden");
-      document.getElementById("revealImposter").classList.add("hidden");
-      document.getElementById("restartBtn").classList.add("hidden");
-    }
+passNext.addEventListener('click', ()=>{
+  // advance player
+  currentPlayer++;
+  if(currentPlayer >= players){
+    // everyone has viewed
+    playerFlow.querySelector('#statusText').textContent = "All players have viewed their prompts.";
+    promptInner.textContent = "When ready, reveal the final questions.";
+    passNext.classList.add('hidden');
+    showQ.classList.add('hidden');
+    hideQ.classList.add('hidden');
+    revealPhaseBtn.classList.remove('hidden');
+    document.getElementById('playerIndex').textContent = players;
+    return;
+  }
+  // next player
+  document.getElementById('playerIndex').textContent = currentPlayer+1;
+  statusText.textContent = `Player ${currentPlayer+1} — ready?`;
+  promptInner.textContent = 'Press "Show my question" when you are ready.';
+  showQ.classList.remove('hidden');
+  hideQ.classList.add('hidden');
+  passNext.classList.add('hidden');
+});
 
-    // Event Listeners
-    document.getElementById("startGame").onclick = startGame;
-    document.getElementById("showBtn").onclick = showQuestion;
-    document.getElementById("hideBtn").onclick = hideQuestion;
-    document.getElementById("revealReal").onclick = revealReal;
-    document.getElementById("revealImposter").onclick = revealImposter;
-    document.getElementById("restartBtn").onclick = restartGame;
-    document.getElementById("refreshBtn").onclick = loadQuestions;
+revealPhaseBtn.addEventListener('click', ()=>{
+  playerFlow.classList.add('hidden');
+  revealPhase.classList.remove('hidden');
+  finalQ.textContent = "Press a button to reveal.";
+});
 
-    // Initialize
-    loadQuestions();
-  </script>
+// reveal final questions
+showRealBtn.addEventListener('click', ()=> {
+  finalQ.textContent = chosenReal;
+});
+showImposterBtn.addEventListener('click', ()=> {
+  finalQ.textContent = chosenImposter;
+});
+
+startVoteBtn.addEventListener('click', ()=>{
+  revealPhase.classList.add('hidden');
+  voting.classList.remove('hidden');
+  renderVoteList();
+});
+
+function renderVoteList(){
+  voteList.innerHTML = "";
+  for(let i=0;i<players;i++){
+    const btn = document.createElement('button');
+    btn.className = 'ghost';
+    btn.style.minWidth = '84px';
+    btn.style.padding = '10px 14px';
+    btn.style.borderRadius = '10px';
+    btn.textContent = `Player ${i+1}`;
+    btn.dataset.player = i;
+    btn.addEventListener('click', ()=>{
+      // simple local vote: highlight selection
+      Array.from(voteList.children).forEach(c=>c.style.outline = 'none');
+      btn.style.outline = '3px solid rgba(124,231,255,0.18)';
+      btn.style.border = '1px solid rgba(124,231,255,0.18)';
+      btn.setAttribute('aria-pressed', 'true');
+      voteList.dataset.selection = i;
+    });
+    voteList.appendChild(btn);
+  }
+}
+
+finishBtn.addEventListener('click', ()=>{
+  const sel = voteList.dataset.selection;
+  let message = "";
+  if(typeof sel === 'undefined'){
+    message = "No one was selected.";
+  } else {
+    const selected = parseInt(sel,10);
+    const wasImposter = imposterIndices.has(selected);
+    message = `You selected Player ${selected+1}. That player ${wasImposter ? "WAS" : "WAS NOT"} an imposter.`;
+    // reveal who imposters were:
+    message += `\n\nImposters were: ${Array.from(imposterIndices).map(i=>"Player "+(i+1)).join(', ')}`;
+  }
+  alert(message);
+});
+
+restartFinalBtn.addEventListener('click', ()=> location.reload());
+restartBtn.addEventListener('click', ()=> location.reload());
+replayBtn.addEventListener('click', ()=> location.reload());
+
+/* small accessibility: allow Enter to trigger Show when focused */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !playerFlow.classList.contains('hidden') && !showQ.classList.contains('hidden')){
+    showQ.click();
+  }
+});
+</script>
 </body>
 </html>
