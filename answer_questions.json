@@ -1,4 +1,8 @@
-[
-  { "real": "Name a fruit that is red", "imposter": "Name a vegetable that is red" },
-  { "real": "Say the word 'hello' in English", "imposter": "Say the word 'hello' in another language" }
-]
+{
+  "number": [
+    { "real": "How many days in a week?", "imposter": "How many days in a month?" }
+  ],
+  "answer": [
+    { "real": "Name a color of the rainbow", "imposter": "Name a planet" }
+  ]
+}
