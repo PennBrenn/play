@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>That one whos the imposter game | Pennbrenn.com</title>
+<title>Imposter Q — Party Game</title>
 <style>
   :root {
     --bg: #0b0f14;
@@ -30,7 +30,7 @@
   p.lead { color: var(--muted); font-size: 14px; margin-top: 4px; }
 
   label { font-size: 14px; color: var(--muted); }
-  select, input, textarea {
+  select {
     background: var(--panel);
     color: var(--text);
     border: 1px solid rgba(255,255,255,0.15);
@@ -40,10 +40,7 @@
     width: 100%;
     box-sizing: border-box;
   }
-  select:focus, input:focus, textarea:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
+  select:focus { outline: none; border-color: var(--accent); }
   button {
     background: var(--accent);
     color: #000;
@@ -88,7 +85,7 @@
 <div class="wrap">
   <div class="card">
     <h1>Imposter Q</h1>
-    <p class="lead">Dark, minimal party game. Uses one shared <code>questions.json</code> file.</p>
+    <p class="lead">Dark, minimal party game using <code>questions.json</code>.</p>
 
     <!-- Setup -->
     <section id="setup">
@@ -108,16 +105,11 @@
           <label>Imposters</label>
           <select id="imposters"></select>
         </div>
-        <div style="flex:1">
-          <label>Question file base URL</label>
-          <input id="rawBase" placeholder="Optional GitHub raw folder URL">
-        </div>
       </div>
-      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <div style="margin-top:16px">
         <button id="startBtn">Start Game</button>
-        <button id="addBtn" class="ghost">Add Questions</button>
       </div>
-      <p class="note">The file <code>questions.json</code> should contain {"{ \"number\": [...], \"answer\": [...] }"}.</p>
+      <p class="note">Make sure <code>questions.json</code> is in the same folder as this file.</p>
     </section>
 
     <!-- Player Phase -->
@@ -161,56 +153,26 @@
       <div class="note">Tap a player to vote locally.</div>
       <button id="finishBtn" style="margin-top:12px">Reveal Imposters</button>
     </section>
-
-    <!-- Add Question -->
-    <section id="addSection" class="hidden">
-      <h2>Add a Question</h2>
-      <div class="controls">
-        <div style="flex:1">
-          <label>Mode</label>
-          <select id="addMode">
-            <option value="number">Number</option>
-            <option value="answer">Answer</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-top:10px">
-        <label>Real Question</label>
-        <textarea id="realInput" rows="2"></textarea>
-      </div>
-      <div style="margin-top:10px">
-        <label>Imposter Question</label>
-        <textarea id="fakeInput" rows="2"></textarea>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
-        <button id="saveQ">Add to list</button>
-        <button id="downloadQ" class="ghost">Download Updated JSON</button>
-        <button id="backBtn" class="danger">Back</button>
-      </div>
-      <p class="note">This updates your local list. Use “Download Updated JSON” to save and commit it to GitHub.</p>
-    </section>
   </div>
 </div>
 
 <script>
-const RAW_BASE_URL_DEFAULT = "";
 const FILE_NAME = "questions.json";
 
 const fallbackData = {
   number: [
-    { real: "How many legs on a spider?", imposter: "How many legs on an ant?" },
-    { real: "How many hours in a day?", imposter: "How many hours in a week?" }
+    { real: "How many legs does a spider have?", imposter: "How many legs does an ant have?" },
+    { real: "How many hours in a day?", imposter: "How many days in a week?" }
   ],
   answer: [
-    { real: "Name a fruit that is red", imposter: "Name a vegetable that is red" },
-    { real: "Say a word starting with A", imposter: "Say a word starting with Z" }
+    { real: "Name a fruit that is red.", imposter: "Name a vegetable that is red." },
+    { real: "Say a word starting with A.", imposter: "Say a word starting with Z." }
   ]
 };
 
 let data = fallbackData;
-let RAW_BASE_URL = RAW_BASE_URL_DEFAULT;
 
-// populate player dropdowns
+// Populate player/imposter dropdowns
 const playersSel = document.getElementById('players');
 for (let i = 2; i <= 12; i++) {
   const o = document.createElement('option');
@@ -234,15 +196,12 @@ playersSel.addEventListener('change', fillImposters);
 fillImposters();
 
 async function loadData() {
-  const base = (document.getElementById('rawBase').value || RAW_BASE_URL_DEFAULT).trim();
-  const urls = base ? [base + FILE_NAME] : ['./' + FILE_NAME, './data/' + FILE_NAME];
-  for (const u of urls) {
-    try {
-      const res = await fetch(u, { cache: "no-store" });
-      if (res.ok) { data = await res.json(); return; }
-    } catch (e) {}
+  try {
+    const res = await fetch(FILE_NAME, { cache: "no-store" });
+    if (res.ok) data = await res.json();
+  } catch (e) {
+    console.warn("Using fallback questions.");
   }
-  data = fallbackData;
 }
 
 function pickOne(arr) {
@@ -261,8 +220,7 @@ function startGame() {
     imposterSet.add(Math.floor(Math.random() * players));
   const mode = document.getElementById('mode').value;
   const pool = data[mode] || [];
-  const picked = pickOne(pool) || { real: "Missing", imposter: "Missing" };
-  chosen = picked;
+  chosen = pickOne(pool) || { real: "Missing", imposter: "Missing" };
   current = 0;
   showSection('playerFlow');
   updatePlayerUI();
@@ -326,36 +284,13 @@ function renderVotes() {
 }
 
 function showSection(id) {
-  ['setup','playerFlow','reveal','voting','addSection'].forEach(s => {
+  ['setup','playerFlow','reveal','voting'].forEach(s => {
     document.getElementById(s).classList.add('hidden');
   });
   document.getElementById(id).classList.remove('hidden');
 }
 
-// Add Question
-const addBtn = document.getElementById('addBtn');
-addBtn.onclick = () => showSection('addSection');
-document.getElementById('backBtn').onclick = () => showSection('setup');
-document.getElementById('saveQ').onclick = () => {
-  const mode = document.getElementById('addMode').value;
-  const real = document.getElementById('realInput').value.trim();
-  const fake = document.getElementById('fakeInput').value.trim();
-  if (!real || !fake) return alert("Fill both fields.");
-  if (!data[mode]) data[mode] = [];
-  data[mode].push({ real, imposter: fake });
-  document.getElementById('realInput').value = "";
-  document.getElementById('fakeInput').value = "";
-  alert("Question added locally!");
-};
-document.getElementById('downloadQ').onclick = () => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = FILE_NAME;
-  a.click();
-};
-
-// Restart buttons
+// Restart
 ['restart1','restart2'].forEach(id => {
   document.getElementById(id).onclick = () => location.reload();
 });
