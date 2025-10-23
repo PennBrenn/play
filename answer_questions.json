@@ -1,0 +1,4 @@
+[
+  { "real": "Name a fruit that is red", "imposter": "Name a vegetable that is red" },
+  { "real": "Say the word 'hello' in English", "imposter": "Say the word 'hello' in another language" }
+]
