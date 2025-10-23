@@ -1,0 +1,4 @@
+[
+  { "real": "How many minutes are in an hour?", "imposter": "How many minutes are in two hours?" },
+  { "real": "How many sides does a triangle have?", "imposter": "How many sides does a square have?" }
+]
