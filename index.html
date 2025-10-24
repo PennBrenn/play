@@ -251,7 +251,7 @@ const data = {
 function pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const playersSel = document.getElementById('players');
-for (let i = 2; i <= 12; i++) {
+for (let i = 2; i <= 100; i++) {
   const o = document.createElement('option');
   o.value = i; o.textContent = i;
   playersSel.appendChild(o);
