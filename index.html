@@ -14,13 +14,15 @@
   button:hover {background:#1565c0;}
   .hidden {display:none;}
   .question-box {background:#1f1f1f; padding:20px; border-radius:10px; margin:20px 0;}
+  #resultsContent {text-align:left; margin-top:10px;}
 </style>
 </head>
 <body>
 <div class="container">
+  <!-- Setup -->
   <div id="setup">
     <h2>How to play:</h2>
-    <p>Each player gets a question and answers it in their head. Pass the device around. After everyone sees their question, state your answers, then reveal the real and imposter questions.</p>
+    <p>Each player will see a question and answer it in their head. Pass the device after each turn. After all players have seen their questions, discuss your answers aloud, then reveal the real and imposter questions.</p>
     <label>Category:</label>
     <select id="category">
       <option value="sfw">SFW</option>
@@ -37,23 +39,20 @@
     <input type="number" id="players" min="1" max="100" value="5">
     <label>Imposters:</label>
     <input type="number" id="imposters" min="1" max="1" value="1">
-    <button id="start">Play</button>
+    <button id="start">Start Game</button>
   </div>
 
+  <!-- Game -->
   <div id="game" class="hidden">
     <div class="question-box">
-      <p id="instructions">Press "Show my question" to see your question.</p>
+      <p id="instructions"></p>
       <p id="questionText" class="hidden"></p>
     </div>
-    <button id="showQuestion">Show my question</button>
-    <button id="hideQuestion" class="hidden">Hide my question</button>
-    <button id="nextPlayer" class="hidden">Next Player</button>
-    <button id="stateAnswers" class="hidden">State your answers</button>
-    <button id="revealReal" class="hidden">Reveal Real Questions</button>
-    <button id="revealImposter" class="hidden">Reveal Imposter Questions</button>
+    <button id="mainButton"></button>
     <button id="restart">Restart</button>
   </div>
 
+  <!-- Results -->
   <div id="results" class="hidden">
     <h3>Results:</h3>
     <div id="resultsContent"></div>
@@ -68,10 +67,17 @@ let numPlayers = 5;
 let numImposters = 1;
 let category = "sfw";
 let qtype = "number";
+let step = "playerQuestion"; // game state
 
 fetch('questions.json')
   .then(res => res.json())
   .then(data => questions = data);
+
+const instructionsEl = document.getElementById('instructions');
+const questionEl = document.getElementById('questionText');
+const mainButton = document.getElementById('mainButton');
+const resultsEl = document.getElementById('results');
+const resultsContent = document.getElementById('resultsContent');
 
 document.getElementById('start').addEventListener('click', () => {
   numPlayers = parseInt(document.getElementById('players').value);
@@ -79,16 +85,15 @@ document.getElementById('start').addEventListener('click', () => {
   category = document.getElementById('category').value;
   qtype = document.getElementById('qtype').value;
 
-  players = [];
+  // build pool
   let pool = [];
-
   if(category === "sfw") pool = qtype==="number"?questions.sfw_number:qtype==="phrase"?questions.sfw_phrase:questions.sfw_number.concat(questions.sfw_phrase);
   else if(category === "mixednsfw") pool = qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase);
   else pool = qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase);
 
-  // shuffle pool
   pool = pool.sort(() => Math.random()-0.5);
 
+  players = [];
   for(let i=0;i<numPlayers;i++){
     let q = pool[i % pool.length];
     players.push({real:q.real, imposter:q.imposter, isImposter:false});
@@ -102,71 +107,57 @@ document.getElementById('start').addEventListener('click', () => {
 
   document.getElementById('setup').classList.add('hidden');
   document.getElementById('game').classList.remove('hidden');
+  resultsEl.classList.add('hidden');
   currentPlayer = 0;
-  showInstructions("Player "+(currentPlayer+1)+"'s turn. Press 'Show my question'");
+  step = "playerQuestion";
+  showPlayerStep();
 });
 
-function showInstructions(text){
-  document.getElementById('instructions').textContent = text;
-  document.getElementById('questionText').classList.add('hidden');
-  document.getElementById('showQuestion').classList.remove('hidden');
-  document.getElementById('hideQuestion').classList.add('hidden');
-  document.getElementById('nextPlayer').classList.add('hidden');
+function showPlayerStep(){
+  questionEl.classList.add('hidden');
+  if(currentPlayer < numPlayers){
+    instructionsEl.textContent = `Player ${currentPlayer+1}, look at your question.`;
+    mainButton.textContent = "Show Question";
+  } else {
+    step = "stateAnswers";
+    instructionsEl.textContent = "All players have seen their questions. Discuss and state your answers aloud.";
+    mainButton.textContent = "Reveal Real Questions";
+  }
 }
 
-document.getElementById('showQuestion').addEventListener('click',()=>{
-  let q = players[currentPlayer];
-  document.getElementById('questionText').textContent = q.isImposter?q.imposter:q.real;
-  document.getElementById('questionText').classList.remove('hidden');
-  document.getElementById('showQuestion').classList.add('hidden');
-  document.getElementById('hideQuestion').classList.remove('hidden');
-});
-
-document.getElementById('hideQuestion').addEventListener('click',()=>{
-  document.getElementById('questionText').classList.add('hidden');
-  document.getElementById('hideQuestion').classList.add('hidden');
-  if(currentPlayer<numPlayers-1){
-    document.getElementById('nextPlayer').classList.remove('hidden');
-  } else {
-    document.getElementById('stateAnswers').classList.remove('hidden');
-    showInstructions("All players have seen their questions. State your answers now!");
+mainButton.addEventListener('click', ()=>{
+  if(step==="playerQuestion"){
+    if(questionEl.classList.contains('hidden')){
+      // show question
+      questionEl.textContent = players[currentPlayer].isImposter ? players[currentPlayer].imposter : players[currentPlayer].real;
+      questionEl.classList.remove('hidden');
+      instructionsEl.textContent = `Player ${currentPlayer+1}, memorize your question and pass the device.`;
+      mainButton.textContent = "Hide Question";
+    } else {
+      // hide question, next player
+      questionEl.classList.add('hidden');
+      currentPlayer++;
+      showPlayerStep();
+    }
+  } else if(step==="stateAnswers"){
+    // reveal real questions
+    let content = "<strong>Real Questions:</strong><br>";
+    players.forEach((p,i)=>{content += `Player ${i+1}: ${p.real}<br>`;});
+    resultsContent.innerHTML = content;
+    resultsEl.classList.remove('hidden');
+    step = "revealImposter";
+    instructionsEl.textContent = "These are the real questions. Now reveal the imposter question(s).";
+    mainButton.textContent = "Reveal Imposter Question(s)";
+  } else if(step==="revealImposter"){
+    let content = "<strong>Imposter Questions:</strong><br>";
+    players.forEach((p,i)=>{if(p.isImposter) content += `Player ${i+1} (Imposter): ${p.imposter}<br>`;});
+    resultsContent.innerHTML += content;
+    instructionsEl.textContent = "Game over! Discuss who the imposter was and share your original questions.";
+    mainButton.textContent = "Done";
+    step = "done";
   }
 });
-
-document.getElementById('nextPlayer').addEventListener('click',()=>{
-  currentPlayer++;
-  showInstructions("Player "+(currentPlayer+1)+"'s turn. Press 'Show my question'");
-});
-
-document.getElementById('stateAnswers').addEventListener('click',()=>{
-  document.getElementById('stateAnswers').classList.add('hidden');
-  document.getElementById('revealReal').classList.remove('hidden');
-  showInstructions("Discuss and state your answers. Then reveal the real questions.");
-});
-
-document.getElementById('revealReal').addEventListener('click',()=>{
-  let content = "";
-  players.forEach((p,i)=>{
-    content += "Player "+(i+1)+": "+p.real+"<br>";
-  });
-  document.getElementById('resultsContent').innerHTML = content;
-  document.getElementById('results').classList.remove('hidden');
-  document.getElementById('revealImposter').classList.remove('hidden');
-  showInstructions("Now reveal the imposter question(s).");
-});
-
-document.getElementById('revealImposter').addEventListener('click',()=>{
-  let content = "";
-  players.forEach((p,i)=>{
-    if(p.isImposter) content += "Player "+(i+1)+" (Imposter): "+p.imposter+"<br>";
-  });
-  document.getElementById('resultsContent').innerHTML += "<br>"+content;
-  showInstructions("Game over! Discuss and restart if you like.");
-});
-
-document.getElementById('restart').addEventListener('click',()=>{
-  location.reload();
-});
+document.getElementById('restart').addEventListener('click',()=>{location.reload();});
 </script>
 </body>
 </html>
