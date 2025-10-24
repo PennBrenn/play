@@ -7,53 +7,16 @@
 <link rel="icon" type="image/png" href="play.png">
 <meta name="description" content="Each player gets a question and answers it in their head. Pass the device around. When everyone gets their question, they go around answering. DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED. Then the real question is shown. Players guess who the imposter is. Justify your answer — even if you’re the imposter. Once the imposter is revealed, everyone shares their question. A moderator can view the real and imposter questions at the end.">
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin:0;
-    padding:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-    background:#121212;
-    color:#f0f0f0;
-    text-align:center;
-  }
-  .container {
-    max-width: 500px;
-    width: 90%;
-  }
-  select, input[type=number], button {
-    width:100%;
-    padding:10px;
-    margin:5px 0;
-    font-size:1em;
-    border-radius:8px;
-    border:none;
-  }
-  button {
-    background:#1e88e5;
-    color:white;
-    cursor:pointer;
-  }
-  button:hover {
-    background:#1565c0;
-  }
+  body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#121212; color:#f0f0f0; text-align:center;}
+  .container {max-width: 500px; width: 90%;}
+  select, input[type=number], button {width:100%; padding:10px; margin:5px 0; font-size:1em; border-radius:8px; border:none;}
+  button {background:#1e88e5; color:white; cursor:pointer;}
+  button:hover {background:#1565c0;}
   .hidden {display:none;}
-  .question-box {
-    background:#1f1f1f;
-    padding:20px;
-    border-radius:10px;
-    margin:20px 0;
-  }
-  #questionText {
-    font-size: 1.5em; /* bigger font */
-    font-weight: bold; /* bold */
-    margin-top: 10px;
-  }
+  .question-box {background:#1f1f1f; padding:20px; border-radius:10px; margin:20px 0;}
+  #questionText {font-size: 1.5em; font-weight: bold; margin-top: 10px;}
   #resultsContent {text-align:left; margin-top:10px;}
 </style>
-
 </head>
 <body>
 <div class="container">
@@ -123,24 +86,29 @@ document.getElementById('start').addEventListener('click', () => {
   category = document.getElementById('category').value;
   qtype = document.getElementById('qtype').value;
 
-  // build pool
+  // Build question pool
   let pool = [];
   if(category === "sfw") pool = qtype==="number"?questions.sfw_number:qtype==="phrase"?questions.sfw_phrase:questions.sfw_number.concat(questions.sfw_phrase);
   else if(category === "mixednsfw") pool = qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase);
   else pool = qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase);
 
   pool = pool.sort(() => Math.random()-0.5);
+  let selectedQ = pool[0]; // all players get the same question
 
+  // Assign to players
   players = [];
   for(let i=0;i<numPlayers;i++){
-    let q = pool[i % pool.length];
-    players.push({real:q.real, imposter:q.imposter, isImposter:false});
+    players.push({real:selectedQ.real, imposter:selectedQ.imposter, isImposter:false});
   }
 
-  // assign imposters
-  for(let i=0;i<numImposters;i++){
+  // Assign imposters
+  let impostersAssigned = 0;
+  while(impostersAssigned < numImposters){
     let idx = Math.floor(Math.random()*numPlayers);
-    players[idx].isImposter = true;
+    if(!players[idx].isImposter){
+      players[idx].isImposter = true;
+      impostersAssigned++;
+    }
   }
 
   document.getElementById('setup').classList.add('hidden');
@@ -153,32 +121,32 @@ document.getElementById('start').addEventListener('click', () => {
 
 function showPlayerStep(){
   questionEl.classList.add('hidden');
-  if(currentPlayer < numPlayers){
-    instructionsEl.textContent = `Player ${currentPlayer+1}, look at your question.`;
-    mainButton.textContent = "Show Question";
-  } else {
-    step = "stateAnswers";
-    instructionsEl.textContent = "All players have seen their questions. Discuss and state your answers aloud.";
-    mainButton.textContent = "Reveal Real Questions";
-  }
+  instructionsEl.textContent = `Player ${currentPlayer+1}, press the button to see your question.`;
+  mainButton.textContent = "Show Question";
 }
 
 mainButton.addEventListener('click', ()=>{
   if(step==="playerQuestion"){
     if(questionEl.classList.contains('hidden')){
-      // show question
+      // Show question
       questionEl.textContent = players[currentPlayer].isImposter ? players[currentPlayer].imposter : players[currentPlayer].real;
       questionEl.classList.remove('hidden');
       instructionsEl.textContent = `Player ${currentPlayer+1}, memorize your question and pass the device.`;
       mainButton.textContent = "Hide Question";
     } else {
-      // hide question, next player
+      // Hide question, next player
       questionEl.classList.add('hidden');
       currentPlayer++;
-      showPlayerStep();
+      if(currentPlayer < numPlayers){
+        showPlayerStep();
+      } else {
+        step = "stateAnswers";
+        instructionsEl.textContent = "All players have seen their questions. Discuss and state your answers aloud.";
+        mainButton.textContent = "Reveal Real Questions";
+      }
     }
   } else if(step==="stateAnswers"){
-    // reveal real questions
+    // Reveal real questions
     let content = "<strong>Real Questions:</strong><br>";
     players.forEach((p,i)=>{content += `Player ${i+1}: ${p.real}<br>`;});
     resultsContent.innerHTML = content;
@@ -195,6 +163,7 @@ mainButton.addEventListener('click', ()=>{
     step = "done";
   }
 });
+
 document.getElementById('restart').addEventListener('click',()=>{location.reload();});
 </script>
 </body>
