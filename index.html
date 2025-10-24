@@ -84,10 +84,11 @@
   }
 </style>
 </head>
+
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>Imposter Q</h1>
+    <h1>That one game where you have to find out who has a different question</h1>
     <p class="lead">
       Each player gets a question and answers it in their head.<br>
       Pass the device around.<br><br>
@@ -109,11 +110,11 @@
             <option value="answer">Answer</option>
           </select>
         </div>
-        <div>
+        <div style="flex:1">
           <label>Players</label>
           <select id="players"></select>
         </div>
-        <div>
+        <div style="flex:1">
           <label>Imposters</label>
           <select id="imposters"></select>
         </div>
@@ -123,7 +124,7 @@
       </div>
     </section>
 
-    <!-- Player Phase -->
+    <!-- Player Flow -->
     <section id="playerFlow" class="hidden center">
       <div class="big" id="statusText">Player 1 — ready?</div>
       <div class="question-box">
@@ -159,25 +160,32 @@
 
 <script>
 // -----------------------------
-// Embedded question bank
+// Embedded Question Bank
 // -----------------------------
 const data = {
   number: [
-    { real: "What should the age of consent be changed to", imposter: "What is the age school got hard" }
+    { real: "How many unread messages are on your phone right now?", imposter: "How many apps are installed on your phone?" },
+    { real: "How many hours of sleep do you usually get?", imposter: "How many cups of coffee do you usually drink per day?" },
+    { real: "How many close friends would you say you have?", imposter: "How many coworkers do you talk to regularly?" },
+    { real: "How many tabs are open on your browser right now?", imposter: "How many apps are open on your phone right now?" },
+    { real: "How many times did you laugh today?", imposter: "How many times did you check your phone today?" }
   ],
   answer: [
-    { real: "What is the best spot to sit in the class", imposter: "Where does the teachers pet sit" }
+    { real: "Describe your ideal weekend.", imposter: "Describe your typical weekday morning." },
+    { real: "What’s a food you genuinely can’t stand?", imposter: "What’s a food you could eat every day?" },
+    { real: "What’s something that instantly improves your mood?", imposter: "What’s something that instantly ruins your mood?" },
+    { real: "What kind of music do you play when you’re alone?", imposter: "What kind of music do you play for guests?" },
+    { real: "If you had to teach a class, what subject would it be?", imposter: "If you had to take a class again, what subject would it be?" }
   ]
 };
 
-
 // -----------------------------
-// Game logic
+// Game Logic
 // -----------------------------
 function pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const playersSel = document.getElementById('players');
-for (let i = 2; i <= 12; i++) {
+for (let i = 2; i <= 100; i++) {
   const o = document.createElement('option');
   o.value = i; o.textContent = i;
   playersSel.appendChild(o);
