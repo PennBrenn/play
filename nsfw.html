@@ -1,0 +1,352 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>That one game where you have to find out who has a different question | PennBrennFun</title>
+<link rel="icon" type="image/png" href="play.png">
+<meta name="description" content="Each player gets a question and answers it in their head. Pass the device around. When everyone gets their question, they go around answering. DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED. Then the real question is shown. Players guess who the imposter is. Justify your answer — even if you’re the imposter. Once the imposter is revealed, everyone shares their question. A moderator can view the real and imposter questions at the end.">
+
+<style>
+  :root {
+    --bg: #1b1b1b;
+    --panel: #292929;
+    --muted: #808080;
+    --accent: #ffa31a;
+    --text: #ffffff;
+    --danger: #ff6b6b;
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  .wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card {
+    width: 100%; max-width: 720px;
+    background: var(--panel); border-radius: 16px; padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  h1 { font-size: 24px; margin-top: 0; }
+  p.lead { color: var(--muted); font-size: 14px; margin-top: 4px; line-height: 1.5; }
+
+  label { font-size: 14px; color: var(--muted); }
+  select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+  button {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  button.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  button.danger {
+    background: var(--danger);
+    color: #fff;
+  }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+  .center { text-align: center; }
+  .big { font-size: 28px; font-weight: 700; margin: 16px 0; }
+  .question-box {
+    background: #0f1720;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    min-height: 120px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .question-text { font-size: 24px; line-height: 1.2; }
+  .hidden { display: none; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 8px; text-align: center; }
+  @media (max-width: 520px) {
+    button { width: 100%; }
+    .controls { flex-direction: column; }
+    .question-text { font-size: 20px; }
+  }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>That one game where you have to find out who has a different question | PennBrennFun</h1>
+    <p class="lead">
+      Each player gets a question and answers it in their head.<br>
+      Pass the device around.<br><br>
+      When everyone gets their question, they go around answering.<br>
+      <b>DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED.</b><br><br>
+      Then the real question is shown. Players guess who the imposter is.<br>
+      <b>Justify your answer — even if you’re the imposter.</b><br><br>
+      Once the imposter is revealed, everyone shares their question.<br>
+      A moderator can view the real and imposter questions at the end.
+    </p>
+
+    <!-- Setup -->
+    <section id="setup">
+      <div class="controls">
+        <div style="flex:1">
+          <label>Mode</label>
+          <select id="mode">
+            <option value="number">Number</option>
+            <option value="answer">Answer</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <label>Players</label>
+          <select id="players"></select>
+        </div>
+        <div style="flex:1">
+          <label>Imposters</label>
+          <select id="imposters"></select>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button id="startBtn">Start Game</button>
+      </div>
+    </section>
+
+    <!-- Player Flow -->
+    <section id="playerFlow" class="hidden center">
+      <div class="big" id="statusText">Player 1 — ready?</div>
+      <div class="question-box">
+        <div id="prompt" class="question-text">Press “Show my question” when ready.</div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <button id="showQ">Show my question</button>
+        <button id="nextBtn" class="ghost hidden">Next player</button>
+      </div>
+      <div class="note" id="progressNote"></div>
+      <div style="margin-top:16px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+        <button id="revealBtn" class="ghost hidden">Reveal Questions</button>
+        <button id="restart1" class="danger">Restart</button>
+      </div>
+    </section>
+
+    <!-- Reveal -->
+    <section id="reveal" class="hidden center">
+      <div class="big">Reveal Questions</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button id="showReal">Show Real Question</button>
+        <button id="showFake">Show Imposter Question</button>
+      </div>
+      <div class="question-box" style="margin-top:16px">
+        <div id="finalQ" class="question-text">Press a button to reveal.</div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button id="restart2" class="danger">Restart</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+// -----------------------------
+// Embedded Question Bank
+// -----------------------------
+const data = {
+  number: [
+    { real: "How many unread messages are on your phone right now?", imposter: "How many apps are installed on your phone?" },
+    { real: "How many hours of sleep do you usually get?", imposter: "How many cups of coffee do you usually drink per day?" },
+    { real: "How many close friends would you say you have?", imposter: "How many coworkers do you talk to regularly?" },
+    { real: "How many tabs are open on your browser right now?", imposter: "How many apps are open on your phone right now?" },
+    { real: "How many times did you laugh today?", imposter: "How many times did you check your phone today?" },
+    { real: "What should the age of consent be changed to", imposter: "What is the age school got hard" },
+    { real: "How many friends do you have", imposter: "What should the age of consent be changed to" },
+    { real: "What age would did school get hard", imposter: "What age is best for a first kiss" },
+    { real: "What is one of your worst grades", imposter: "What is your grade in your best class" },
+    { real: "What is the age that a person becomes unattractive to you", imposter: "What age is a good age for death" },
+    { real: "How many friends do you have", imposter: "How many people could you kill right now" },
+    { real: "What age should people be able to drive", imposter: "What age is good for a first job" },
+    { real: "How many people did you kill", imposter: "Pick a number 0-2" },
+    { real: "What should the age of consent be changed to", imposter: "Pick any number (lower is better)" },
+    { real: "What is a good amount of times to masturbate a week", imposter: "How many times do you piss a week" },
+    { real: "Quick! Guess the answer: 1293*5238", imposter: "How much money is livable wage (say a number, NOT SIX FIGURES OR SIMALAR)" },
+    { real: "How much money would you suck the person on your lefts dick for (dont say infinite or no)", imposter: "How much money would you crack the person to the left for (dont say infinite or no)" },
+    { real: "How many spoons to drink a glass of water", imposter: "You are the imposter, pick a number (hint: How many spoons to drink...)" },
+    { real: "What time is good for gooning", imposter: "What time do you go to bed" },
+    { real: "At what age do you think you would want to have sex", imposter: "Pick a number under 50" },
+    { real: "What should minimum wage be", imposter: "About how many coins have you picked up in your life" },
+    { real: "About what is the value of the most expensive thing youve held", imposter: "How much do you think a 2009 toyota camry costs" },
+    { real: "About how many books have you read", imposter: "When will you die" },
+    { real: "Whats the perfect amount of shirts in a wardrobe", imposter: "how many dates have you been on ever" },
+    { real: "Whats the lowest amount of money to be paid to crack a random person in the world", imposter: "About how much money have you ever spent" },
+    { real: "How many hours of sleep do you usually get", imposter: "How many times do you jerk off a week" },
+    { real: "How many femboys would you crack for 20$ each", imposter: "How many times do you jerk off a week" },
+    { real: "What age would you like to die", imposter: "How old is too old" },
+    { real: "How old is too old (as of now)", imposter: "Pick any number 0-100 (lower is best)" },
+    { real: "What do you think is the average fluid volume of a nut", imposter: "how much water do you drink a day" },
+    { real: "What is the biggest number you know", imposter: "What is the biggest number you can count to" },
+    { real: "How many times have you scrolled past something that turned you on", imposter: "How often do you get in a car in a week" },
+    { real: "You are the imposter pick any number", imposter: "You are the imposter pick any number" },
+    { real: "On a scale of 1-10 how would you rate the person to your left (If you were into that)", imposter: "Shes a 10 but she is clingy" },
+    { real: "How much money have you spent on onlyfans", imposter: "How much money have you spent on boba in the last week" },
+    { real: "How many countries have you traveled to", imposter: "What grade did you get on your last test (not precent)" }
+
+  ],
+  answer: [
+    { real: "Describe your ideal weekend.", imposter: "Describe your typical weekday morning." },
+    { real: "What’s a food you genuinely can’t stand?", imposter: "What’s a food you could eat every day?" },
+    { real: "What’s something that instantly improves your mood?", imposter: "What’s something that instantly ruins your mood?" },
+    { real: "What kind of music do you play when you’re alone?", imposter: "What kind of music do you play for guests?" },
+    { real: "If you had to teach a class, what subject would it be?", imposter: "If you had to take a class again, what subject would it be?" },
+    { real: "What is the best spot to sit in the class", imposter: "Where does the teachers pet sit" },
+    { real: "What is the best pastime", imposter: "What do you do when youre bored" },
+    { real: "Where do you see yourself in 5 years", imposter: "Whats a job you hate but makes good money" },
+    { real: "What is the best type of porn", imposter: "Name a weird fetish" },
+    { real: "What is a reason to kill yourself", imposter: "What makes you want to jerk off" },
+    { real: "What is your least favorite class", imposter: "What is the most fun class this year" },
+    { real: "If there was a fire, what would you save first", imposter: "What is your favorite food" },
+    { real: "What is the best thing youve ever eaten", imposter: "What is your favorite farm animal" },
+    { real: "What is the gayest thing a person can do without being gay", imposter: "What is the freakiest thing you saw someone do" },
+    { real: "What is the worst thing you saw while scrolling", imposter: "What is the most brainrotted thing you saw while scrolling" },
+    { real: "What is the weirdest kink youve heard of", imposter: "What is the most justifiable kink you know" },
+    { real: "What are you gonna do in a active shooting", imposter: "Where would you hide to escape a rapist in school" },
+    { real: "Whats your favorite candy", imposter: "What is the worst candy ever" },
+    { real: "What is your favorite color that isnt well known (eg brownish-red, maroon", imposter: "What shade do you not want your shit to be" },
+    { real: "What is the worst candy ever", imposter: "Whats your favorite candy" },
+    { real: "Whats your favorite place to doomscroll", imposter: "Whats your favorite place to goon" },
+    { real: "Whats your favorite place to eat dinner", imposter: "Whats your favorite place to sit" },
+    { real: "Where would you wanna die", imposter: "Whats your favorite place to jerk off" },
+    { real: "Explain how red feels to you (Dont say the color)", imposter: "Explain how blue feels to you (Dont say the color)" },
+    { real: "Explain how pink feels to you (Dont say the color)", imposter: "Explain how black feels to you (Dont say the color)" },
+    { real: "Explain how black feels to you (Dont say the color)", imposter: "Explain how white feels to you (Dont say the color)" },
+    { real: "If it was 2001, where would you want to be when the towers fell", imposter: "What class would you want to skip" },
+    { real: "Name a underrated car", imposter: "Name a really really bad car" },
+    { real: "Whats the best way to die", imposter: "What is the most gruesome car crash you can imagine (come up with a fake scenario)" },
+    { real: "Name a underrated food", imposter: "Name a " },
+    { real: "Name a really good candy", imposter: "Name a " },
+    { real: "Name a element", imposter: "Pick one: Rhedynium, Hexium, Yelium, Partnium" },
+    { real: "Name something edible", imposter: "Name a school supply you always carry" },
+    { real: "Name your favorite show", imposter: "Name the first show you remember watching" },
+    { real: "Name a lighting technology: (eg. Filament, LED, ect.", imposter: "Name a way to light a home that isnt common." },
+    { real: "Whats your favorite car (If you dont know say a brand)", imposter: "Whats the worst car (If you dont know say a brand)" },
+    { real: "What is your favorite game", imposter: "Name a freaky game" },
+    { real: "What is the best spot in school", imposter: "Where would you plant a bomb in school" },
+    { real: "Where is the worst place to be in an earthquake", imposter: "Where are you going to be in about a hour" },
+    { real: "Best sex position", imposter: "Name an object that sounds like a sex position" },
+    { real: "What is the best meme ever", imposter: "What is the last meme you saw" },
+    { real: "Make a shitty joke", imposter: "Make the gayest joke ever" },
+    { real: "What is the most valuable thing youve held", imposter: "Name something expensive" },
+    { real: "Name the last video you remember watching (can be porn)", imposter: "Make a name for a porn video" },
+    { real: "What movie has the most attractive actor/actresses", imposter: "Name any animated movie" },
+    { real: "If you could live any country, where would it be", imposter: "What country would you go to flee from the immortal snail" },
+    { real: "What do you look for in a significant other", imposter: "Whats a body part is your least favorite fetish" },
+    { real: "How many hours of sleep do you usually get", imposter: "How many times do you jerk off a week" },
+    { real: "Whats something you hate about yourself", imposter: "Name any body part/organ" },
+    { real: "Who around you probably has the biggest dick", imposter: "Who around you probably is thinking about getting cracked" },
+    { real: "Who around you probably is the most gay", imposter: "Who around you probably likes feet " },
+    { real: "What is the best restaurant", imposter: "What is the dirtiest restaurant chain you've been to" },
+    { real: "What would you do if you had to do it for a week straight", imposter: "Whats something you hate watching people do" },
+    { real: "Whats your favorite way to pass time", imposter: "What did you do yesterday" },
+    { real: "Would you place a bomb somewhere, or get 1B dollars", imposter: "Whats your favorite goverment building" },
+    { real: "What is the weirdest thing someone probably shoved up their ass", imposter: "name something long and hard that isnt a cock" }
+  ]
+};
+
+// -----------------------------
+// Game Logic
+// -----------------------------
+function pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const playersSel = document.getElementById('players');
+for (let i = 2; i <= 100; i++) {
+  const o = document.createElement('option');
+  o.value = i; o.textContent = i;
+  playersSel.appendChild(o);
+}
+playersSel.value = 4;
+
+const impostersSel = document.getElementById('imposters');
+function fillImposters() {
+  impostersSel.innerHTML = "";
+  const p = parseInt(playersSel.value, 10);
+  for (let i = 1; i < p; i++) {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = i;
+    impostersSel.appendChild(o);
+  }
+  impostersSel.value = 1;
+}
+playersSel.addEventListener('change', fillImposters);
+fillImposters();
+
+let players = 4, imposters = 1, imposterSet = new Set(), current = 0;
+let chosen = { real: "", imposter: "" };
+
+function startGame() {
+  players = parseInt(playersSel.value, 10);
+  imposters = parseInt(impostersSel.value, 10);
+  imposterSet = new Set();
+  while (imposterSet.size < imposters)
+    imposterSet.add(Math.floor(Math.random() * players));
+  const mode = document.getElementById('mode').value;
+  const pool = data[mode] || [];
+  chosen = pickOne(pool) || { real: "Missing", imposter: "Missing" };
+  current = 0;
+  showSection('playerFlow');
+  updatePlayerUI();
+}
+
+function updatePlayerUI() {
+  document.getElementById('statusText').textContent = `Player ${current + 1} — ready?`;
+  document.getElementById('prompt').textContent = 'Press “Show my question” when ready.';
+  document.getElementById('showQ').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('revealBtn').classList.add('hidden');
+  document.getElementById('progressNote').textContent = `(${current + 1}/${players})`;
+}
+
+document.getElementById('showQ').onclick = () => {
+  const text = imposterSet.has(current) ? chosen.imposter : chosen.real;
+  document.getElementById('prompt').textContent = text;
+  document.getElementById('showQ').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+};
+document.getElementById('nextBtn').onclick = () => {
+  current++;
+  if (current >= players) {
+    document.getElementById('prompt').textContent = "All players have their question.";
+    document.getElementById('nextBtn').classList.add('hidden');
+    document.getElementById('revealBtn').classList.remove('hidden');
+  } else updatePlayerUI();
+};
+document.getElementById('revealBtn').onclick = () => showSection('reveal');
+document.getElementById('showReal').onclick = () => document.getElementById('finalQ').textContent = chosen.real;
+document.getElementById('showFake').onclick = () => document.getElementById('finalQ').textContent = chosen.imposter;
+
+// Restart buttons
+['restart1','restart2'].forEach(id => {
+  document.getElementById(id).onclick = () => location.reload();
+});
+
+function showSection(id) {
+  ['setup','playerFlow','reveal'].forEach(s => {
+    document.getElementById(s).classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+}
+
+document.getElementById('startBtn').onclick = () => startGame();
+</script>
+</body>
+</html>
