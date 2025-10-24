@@ -1,0 +1,22 @@
+{
+  "sfw_number": [
+    {"real": "How many pieces of jewelry do you have?", "imposter": "How many pairs of pants do you have?"},
+    {"real": "How many pets do you have?", "imposter": "How many chairs do you have?"},
+    {"real": "How many countries have you visited?", "imposter": "How many parks have you visited?"}
+  ],
+  "sfw_phrase": [
+    {"real": "Describe your favorite holiday memory", "imposter": "Describe your favorite TV memory"},
+    {"real": "What would you do if you won a million dollars?", "imposter": "What would you do if you won a million coins?"},
+    {"real": "What's your favorite hobby and why?", "imposter": "What's your favorite snack and why?"}
+  ],
+  "nsfw_number": [
+    {"real": "At what age did you have your first kiss?", "imposter": "At what age did you eat your first cake?"},
+    {"real": "How many people have you dated?", "imposter": "How many books have you read?"},
+    {"real": "How many times have you broken a rule?", "imposter": "How many times have you sung in the shower?"}
+  ],
+  "nsfw_phrase": [
+    {"real": "Describe your first crush", "imposter": "Describe your first car"},
+    {"real": "What's your wildest guilty pleasure?", "imposter": "What's your weirdest hobby?"},
+    {"real": "Tell a secret you've never told anyone", "imposter": "Tell a food secret you've never told anyone"}
+  ]
+}
