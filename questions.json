@@ -3,7 +3,6 @@
     { "real": "How many pieces of jewelry do you have", "imposter": "How many pairs of pants do you have" },
     { "real": "How many girlfriends/boyfriends have you had", "imposter": "Pick a negative number" },
     { "real": "How many pieces of gum do you chew a week", "imposter": "" },
-    { "real": "", "imposter": "y" },
     { "real": "At what age should people be able to get their licence", "imposter": "y" },
     { "real": "How many unread messages are on your phone right now?", "imposter": "How many apps are installed on your phone?" },
     { "real": "How many hours of sleep do you usually get?", "imposter": "How many cups of coffee do you usually drink per day?" },
