@@ -7,15 +7,53 @@
 <link rel="icon" type="image/png" href="play.png">
 <meta name="description" content="Each player gets a question and answers it in their head. Pass the device around. When everyone gets their question, they go around answering. DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED. Then the real question is shown. Players guess who the imposter is. Justify your answer — even if you’re the imposter. Once the imposter is revealed, everyone shares their question. A moderator can view the real and imposter questions at the end.">
 <style>
-  body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#121212; color:#f0f0f0; text-align:center;}
-  .container {max-width: 500px; width: 90%;}
-  select, input[type=number], button {width:100%; padding:10px; margin:5px 0; font-size:1em; border-radius:8px; border:none;}
-  button {background:#1e88e5; color:white; cursor:pointer;}
-  button:hover {background:#1565c0;}
+  body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:#121212;
+    color:#f0f0f0;
+    text-align:center;
+  }
+  .container {
+    max-width: 500px;
+    width: 90%;
+  }
+  select, input[type=number], button {
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+    font-size:1em;
+    border-radius:8px;
+    border:none;
+  }
+  button {
+    background:#1e88e5;
+    color:white;
+    cursor:pointer;
+  }
+  button:hover {
+    background:#1565c0;
+  }
   .hidden {display:none;}
-  .question-box {background:#1f1f1f; padding:20px; border-radius:10px; margin:20px 0;}
+  .question-box {
+    background:#1f1f1f;
+    padding:20px;
+    border-radius:10px;
+    margin:20px 0;
+  }
+  #questionText {
+    font-size: 1.5em; /* bigger font */
+    font-weight: bold; /* bold */
+    margin-top: 10px;
+  }
   #resultsContent {text-align:left; margin-top:10px;}
 </style>
+
 </head>
 <body>
 <div class="container">
