@@ -1,3 +1,21 @@
+const data = {
+  number: [
+    { real: "How many legs does a spider have?", imposter: "How many legs does an ant have?" },
+    { real: "How many continents are there?", imposter: "How many oceans are there?" },
+    { real: "How many days in a leap year?", imposter: "How many months in a year?" },
+    { real: "How many stripes on the US flag?", imposter: "How many stars on the US flag?" },
+    { real: "How many bones are in the human body?", imposter: "How many muscles are in the human body?" }
+  ],
+  answer: [
+    { real: "Name something that can fly.", imposter: "Name something that can swim." },
+    { real: "Say a color found on a rainbow.", imposter: "Say a color not found on a rainbow." },
+    { real: "Name a fruit that is red.", imposter: "Name a vegetable that is red." },
+    { real: "Say a day of the week.", imposter: "Say a month of the year." },
+    { real: "Name an animal you can keep as a pet.", imposter: "Name a wild animal." }
+  ]
+};
+
+
 {
   "number": [
     { "real": "What should the age of consent be changed to", "imposter": "What is the age school got hard" },
