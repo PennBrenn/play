@@ -19,8 +19,8 @@
     { "real": "Whats the perfect amount of shirts in a wardrobe", "imposter": "how many dates have you been on ever" },
     { "real": "How many times have you won an ebay auction", "imposter": "How many times do you trip every week" },
     { "real": "What age should people be able to drive", "imposter": "What age is good for a first job" },
-    { "real": "About what is the value of the most expensive thing youve held", "imposter": "How much do you think a 2009 toyota camry costs" }
-    { "real": "What is the biggest number you know", "imposter": "What is the biggest number you would count to" }
+    { "real": "About what is the value of the most expensive thing youve held", "imposter": "How much do you think a 2009 toyota camry costs" },
+    { "real": "What is the biggest number you know", "imposter": "What is the biggest number you would count to" },
 
   ],
   "sfw_phrase": [
