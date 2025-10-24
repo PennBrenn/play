@@ -7,14 +7,11 @@
 <link rel="icon" type="image/png" href="play.png">
 <meta name="description" content="Each player gets a question and answers it in their head. Pass the device around. When everyone gets their question, they go around answering. DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED. Then the real question is shown. Players guess who the imposter is. Justify your answer — even if you’re the imposter. Once the imposter is revealed, everyone shares their question. A moderator can view the real and imposter questions at the end.">
 <style>
-  :root {
-    --accent-color: #1e88e5;
-  }
+  :root {--accent-color: #1e88e5;}
   * {box-sizing: border-box;}
   body {
     font-family: Arial, sans-serif;
-    margin:0;
-    padding:0;
+    margin:0; padding:0;
     background:#121212;
     color:#f0f0f0;
     display:flex;
@@ -118,16 +115,10 @@ let category = "sfw";
 let qtype = "number";
 let step = "playerQuestion";
 
-// Change accent color based on category
-const categoryColors = {
-  sfw: '#1e88e5',          // blue
-  mixednsfw: '#e53935',    // red
-  dontworrynsfw: '#fbc02d' // yellow
-};
+// Accent colors for categories
+const categoryColors = { sfw: '#1e88e5', mixednsfw:'#e53935', dontworrynsfw:'#fbc02d' };
 
-fetch('questions.json')
-  .then(res => res.json())
-  .then(data => questions = data);
+fetch('questions.json').then(r=>r.json()).then(data=>questions=data);
 
 const instructionsEl = document.getElementById('instructions');
 const questionEl = document.getElementById('questionText');
@@ -137,39 +128,45 @@ const resultsContent = document.getElementById('resultsContent');
 const categoryEl = document.getElementById('category');
 
 categoryEl.addEventListener('change', ()=>{
-  let c = categoryEl.value;
-  document.documentElement.style.setProperty('--accent-color', categoryColors[c]);
+  document.documentElement.style.setProperty('--accent-color', categoryColors[categoryEl.value]);
 });
 
-document.getElementById('start').addEventListener('click', () => {
+document.getElementById('start').addEventListener('click', ()=>{
   numPlayers = parseInt(document.getElementById('players').value);
   numImposters = parseInt(document.getElementById('imposters').value);
+
+  if(numImposters >= numPlayers){
+    alert("Imposters must be fewer than players. Adjusting automatically.");
+    numImposters = numPlayers - 1;
+    document.getElementById('imposters').value = numImposters;
+  }
+
   category = document.getElementById('category').value;
   qtype = document.getElementById('qtype').value;
 
-  // Build question pool
+  // Build question pool based on selection
   let pool = [];
-  if(category === "sfw") pool = qtype==="number"?questions.sfw_number:qtype==="phrase"?questions.sfw_phrase:questions.sfw_number.concat(questions.sfw_phrase);
-  else if(category === "mixednsfw") pool = qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase);
-  else pool = qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase);
+  if(category === "sfw") pool = (qtype==="number"?questions.sfw_number:qtype==="phrase"?questions.sfw_phrase:questions.sfw_number.concat(questions.sfw_phrase));
+  else if(category === "mixednsfw") pool = (qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase));
+  else pool = (qtype==="number"?questions.nsfw_number:qtype==="phrase"?questions.nsfw_phrase:questions.nsfw_number.concat(questions.nsfw_phrase));
 
-  pool = pool.sort(() => Math.random()-0.5);
-  let selectedQ = pool[0]; // all players get the same question
-
-  // Assign to players
-  players = [];
-  for(let i=0;i<numPlayers;i++){
-    players.push({real:selectedQ.real, imposter:selectedQ.imposter, isImposter:false});
+  if(pool.length === 0){
+    alert("No questions available for selected category and type!");
+    return;
   }
 
-  // Assign imposters
-  let impostersAssigned = 0;
-  while(impostersAssigned < numImposters){
-    let idx = Math.floor(Math.random()*numPlayers);
-    if(!players[idx].isImposter){
-      players[idx].isImposter = true;
-      impostersAssigned++;
-    }
+  // Pick random question for this round
+  const selectedQ = pool[Math.floor(Math.random()*pool.length)];
+
+  // Assign question to all players
+  players = Array(numPlayers).fill().map(()=>({real:selectedQ.real, imposter:selectedQ.imposter, isImposter:false}));
+
+  // Randomly assign imposters
+  let availableIndexes = [...Array(numPlayers).keys()];
+  for(let i=0; i<numImposters; i++){
+    const randIdx = Math.floor(Math.random()*availableIndexes.length);
+    const playerIndex = availableIndexes.splice(randIdx,1)[0];
+    players[playerIndex].isImposter = true;
   }
 
   document.getElementById('setup').classList.add('hidden');
@@ -189,46 +186,35 @@ function showPlayerStep(){
 mainButton.addEventListener('click', ()=>{
   if(step==="playerQuestion"){
     if(questionEl.classList.contains('hidden')){
-      // Show question
       questionEl.textContent = players[currentPlayer].isImposter ? players[currentPlayer].imposter : players[currentPlayer].real;
       questionEl.classList.remove('hidden');
       instructionsEl.textContent = `Player ${currentPlayer+1}, memorize your question and pass the device.`;
       mainButton.textContent = "Hide Question";
     } else {
-      // Hide question, next player
       questionEl.classList.add('hidden');
       currentPlayer++;
-      if(currentPlayer < numPlayers){
-        showPlayerStep();
-      } else {
-        step = "stateAnswers";
-        instructionsEl.textContent = "All players have seen their questions. Discuss and state your answers aloud.";
-        mainButton.textContent = "Reveal Real Question";
+      if(currentPlayer < numPlayers) showPlayerStep();
+      else {
+        step="stateAnswers";
+        instructionsEl.textContent="All players have seen their questions. Discuss and state your answers aloud.";
+        mainButton.textContent="Reveal Real Question";
       }
     }
   } else if(step==="stateAnswers"){
-    // Reveal only the real question
-    let content = "<strong>Real Question:</strong><br>";
-    content += players[0].real + "<br>"; // all real questions are the same
-    resultsContent.innerHTML = content;
+    resultsContent.innerHTML="<strong>Real Question:</strong><br>"+players[0].real+"<br>";
     resultsEl.classList.remove('hidden');
-    step = "revealImposter";
-    instructionsEl.textContent = "Now reveal the imposter question(s).";
-    mainButton.textContent = "Reveal Imposter Question(s)";
+    step="revealImposter";
+    instructionsEl.textContent="Now reveal the imposter question(s).";
+    mainButton.textContent="Reveal Imposter Question(s)";
   } else if(step==="revealImposter"){
     let imposters = players.filter(p=>p.isImposter);
-    if(imposters.length > 0){
-      let content = "<strong>Imposter Question(s):</strong><br>";
-      imposters.forEach(p=>{
-        content += p.imposter + "<br>";
-      });
-      resultsContent.innerHTML += "<br>" + content;
-    } else {
-      resultsContent.innerHTML += "<br><strong>No imposters this round.</strong>";
-    }
-    instructionsEl.textContent = "Game over! Discuss who the imposter was and share your original questions.";
-    mainButton.textContent = "Done";
-    step = "done";
+    if(imposters.length>0){
+      resultsContent.innerHTML+="<br><strong>Imposter Question(s):</strong><br>";
+      imposters.forEach(p=>resultsContent.innerHTML+=p.imposter+"<br>");
+    } else resultsContent.innerHTML+="<br><strong>No imposters this round.</strong>";
+    instructionsEl.textContent="Game over! Discuss who the imposter was and share your original questions.";
+    mainButton.textContent="Done";
+    step="done";
   }
 });
 
@@ -236,3 +222,4 @@ document.getElementById('restart').addEventListener('click',()=>{location.reload
 </script>
 </body>
 </html>
+
