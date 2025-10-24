@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>That one game where you have to find out who has a diffrent question | PennBrennFun</title>
+<title>That one game where you have to find out who has a different question | PennBrennFun</title>
 <link rel="icon" type="image/png" href="play.png">
 <meta name="description" content="Each player gets a question and answers it in their head. Pass the device around. When everyone gets their question, they go around answering. DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED. Then the real question is shown. Players guess who the imposter is. Justify your answer — even if you’re the imposter. Once the imposter is revealed, everyone shares their question. A moderator can view the real and imposter questions at the end.">
+
 <style>
   :root {
     --bg: #0b0f14;
@@ -86,7 +87,7 @@
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>Who has a diffrent queston? | PennBrennFun</h1>
+    <h1>Imposter Q</h1>
     <p class="lead">
       Each player gets a question and answers it in their head.<br>
       Pass the device around.<br><br>
@@ -251,7 +252,7 @@ const data = {
 function pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const playersSel = document.getElementById('players');
-for (let i = 2; i <= 100; i++) {
+for (let i = 2; i <= 12; i++) {
   const o = document.createElement('option');
   o.value = i; o.textContent = i;
   playersSel.appendChild(o);
