@@ -1,38 +1,22 @@
 {
   "sfw_number": [
-    { "real": "How many pieces of jewelry do you have", "imposter": "How many pairs of pants do you have" },
-    { "real": "How many girlfriends/boyfriends have you had", "imposter": "Pick a negative number" },
-    { "real": "How many pieces of gum do you chew a week", "imposter": "" },
-    { "real": "How many gape horns", "imposter": "y" },
-    { "real": "At what age should people be able to get their licence", "imposter": "y" },
-    { "real": "How many unread messages are on your phone right now?", "imposter": "How many apps are installed on your phone?" },
-    { "real": "How many hours of sleep do you usually get?", "imposter": "How many cups of coffee do you usually drink per day?" },
-    { "real": "How many close friends would you say you have?", "imposter": "How many coworkers or peers do you talk to regularly?" },
-    { "real": "How many tabs are open on your browser right now?", "imposter": "How many apps are open on your phone right now?" },
-    { "real": "How many times did you laugh today?", "imposter": "How many times did you check your phone today?" },
-    { "real": "What age would did school get hard", "imposter": "What age is best for a first kiss" },
-    { "real": "How many people did you kill", "imposter": "Pick a number 0-2" },
-    { "real": "Quick! Guess the answer: 1293*5238", "imposter": "How much money is livable wage (say a number, NOT SIX FIGURES OR SIMALAR, AND NO SAYING DOLLARS)" },
-    { "real": "What should minimum wage be", "imposter": "About how many coins have you picked up in your life" },
-    { "real": "You are the imposter pick any number", "imposter": "You are the imposter pick any number" },
-    { "real": "How many friends do you have", "imposter": "How many people are you going to kill" },
-    { "real": "Whats the perfect amount of shirts in a wardrobe", "imposter": "how many dates have you been on ever" },
-    { "real": "How many times have you won an ebay auction", "imposter": "How many times do you trip every week" },
-    { "real": "What age should people be able to drive", "imposter": "What age is good for a first job" },
-    { "real": "About what is the value of the most expensive thing youve held", "imposter": "How much do you think a 2009 toyota camry costs" },
-    { "real": "What is the biggest number you know", "imposter": "What is the biggest number you would count to" },
-
+    {"real": "How many pieces of jewelry do you own?", "imposter": "How many pairs of pants do you own?"},
+    {"real": "How many hours do you sleep on average?", "imposter": "How many cups of water do you drink daily?"},
+    {"real": "How many pets do you have?", "imposter": "How many pillows do you have?"}
   ],
   "sfw_phrase": [
-    {"real": "Describe your favorite holiday memory", "imposter": "Describe your favorite TV memory"},
-    {"real": "What would you do if you won a million dollars?", "imposter": "What would you do if you won a million coins?"}
+    {"real": "What's your favorite color?", "imposter": "What's your favorite shape?"},
+    {"real": "What's your dream vacation spot?", "imposter": "What's your favorite book?"},
+    {"real": "What's your favorite food?", "imposter": "What's your favorite utensil?"}
   ],
   "nsfw_number": [
-    {"real": "At what age did you have your first kiss?", "imposter": "At what age did you eat your first cake?"},
-    {"real": "How many people have you dated?", "imposter": "How many books have you read?"}
+    {"real": "At what age did you have your first kiss?", "imposter": "At what age did you first ride a bike?"},
+    {"real": "How many romantic relationships have you had?", "imposter": "How many sandwiches have you eaten this week?"},
+    {"real": "How many times have you broken a bone?", "imposter": "How many times have you lost your keys?"}
   ],
   "nsfw_phrase": [
-    {"real": "Describe your first crush", "imposter": "Describe your first car"},
-    {"real": "What's your wildest guilty pleasure?", "imposter": "What's your weirdest hobby?"}
+    {"real": "What's your most embarrassing romantic story?", "imposter": "What's your most embarrassing school story?"},
+    {"real": "Describe your first crush.", "imposter": "Describe your first pet."},
+    {"real": "What's your guilty pleasure TV show?", "imposter": "What's your favorite cartoon character?"}
   ]
 }
