@@ -14,7 +14,7 @@
     { "real": "How many people did you kill", "imposter": "Pick a number 0-2" },
     { "real": "Quick! Guess the answer: 1293*5238", "imposter": "How much money is livable wage (say a number, NOT SIX FIGURES OR SIMALAR, AND NO SAYING DOLLARS)" },
     { "real": "What should minimum wage be", "imposter": "About how many coins have you picked up in your life" },
-    { "real": "You are the "imposter" pick any number", "imposter": "You are the "imposter" pick any number" },
+    { "real": "You are the imposter pick any number", "imposter": "You are the imposter pick any number" },
     { "real": "How many friends do you have", "imposter": "How many people are you going to kill" },
     { "real": "Whats the perfect amount of shirts in a wardrobe", "imposter": "how many dates have you been on ever" },
     { "real": "How many times have you won an ebay auction", "imposter": "How many times do you trip every week" },
