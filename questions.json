@@ -20,7 +20,7 @@
     { "real": "What age should people be able to drive", "imposter": "What age is good for a first job" },
     { "real": "About what is the value of the most expensive thing youve held", "imposter": "How much do you think a 2009 toyota camry costs" },
     { "real": "How many spoons to drink a glass of water", "imposter": "You are the imposter, pick a number (hint: How many spoons to drink...)" },
-    { "real": "What is the biggest number you know", "imposter": "What is the biggest number you would count to" }
+    { "real": "What is the biggest number you know", "imposter": "What is the biggest number you would count to" },
 
   ],
   "sfw_phrase": [
@@ -56,7 +56,7 @@
     { "real": "Explain how pink feels to you in one word (Dont say the color)", "imposter": "Explain how black feels to you in one word (Dont say the color)" },
     { "real": "Explain how black feels to you in one word (Dont say the color)", "imposter": "Explain how white feels to you in one word(Dont say the color)" },
     { "real": "What is one of your worst grades", "imposter": "What is your grade in your best class" },
-    { "real": "Whats a song you could listen to forever?", "imposter": "Whats a song you never want to hear again?" }
+    { "real": "Whats a song you could listen to forever?", "imposter": "Whats a song you never want to hear again?" },
 
   ],
   "nsfw_number": [
@@ -78,7 +78,7 @@
     { "real": "How many times have you scrolled past something that turned you on", "imposter": "How often do you get in a car in a week" },
     { "real": "On a scale of 1-10 how would you rate the person to your left (If you were into that)", "imposter": " Shes a 10 but she is clingy" },
     { "real": "How much money have you spent on onlyfans", "imposter": "How much money have you spent on boba in the last week" },
-    { "real": "How many countries have you traveled to", "imposter": "What grade did you get on your last test (not precent)" }
+    { "real": "How many countries have you traveled to", "imposter": "What grade did you get on your last test (not precent)" },
 
 
   ],
