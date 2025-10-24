@@ -7,15 +7,63 @@
 <link rel="icon" type="image/png" href="play.png">
 <meta name="description" content="Each player gets a question and answers it in their head. Pass the device around. When everyone gets their question, they go around answering. DO NOT TALK UNTIL AFTER THE REAL QUESTION IS REVEALED. Then the real question is shown. Players guess who the imposter is. Justify your answer — even if you’re the imposter. Once the imposter is revealed, everyone shares their question. A moderator can view the real and imposter questions at the end.">
 <style>
-  body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#121212; color:#f0f0f0; text-align:center;}
-  .container {max-width: 500px; width: 90%;}
-  select, input[type=number], button {width:100%; padding:10px; margin:5px 0; font-size:1em; border-radius:8px; border:none;}
-  button {background:#1e88e5; color:white; cursor:pointer;}
-  button:hover {background:#1565c0;}
+  :root {
+    --accent-color: #1e88e5;
+  }
+  * {box-sizing: border-box;}
+  body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:0;
+    background:#121212;
+    color:#f0f0f0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    text-align:center;
+  }
+  .container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  h2 {margin-bottom:10px;}
+  select, input[type=number], button {
+    width: 100%;
+    padding: 15px;
+    margin: 8px 0;
+    font-size: 1.2em;
+    border-radius:12px;
+    border:none;
+  }
+  button {
+    background: var(--accent-color);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover {opacity:0.9;}
   .hidden {display:none;}
-  .question-box {background:#1f1f1f; padding:20px; border-radius:10px; margin:20px 0;}
-  #questionText {font-size: 1.5em; font-weight: bold; margin-top: 10px;}
-  #resultsContent {text-align:left; margin-top:10px;}
+  .question-box {
+    background:#1f1f1f;
+    padding:30px;
+    border-radius:15px;
+    margin:20px 0;
+    width:100%;
+  }
+  #questionText {
+    font-size: 2em;
+    font-weight: bold;
+    margin-top: 15px;
+  }
+  #instructions {font-size:1.2em; margin-bottom:10px;}
+  #resultsContent {text-align:left; margin-top:10px; font-size:1.3em;}
 </style>
 </head>
 <body>
@@ -28,7 +76,7 @@
     <select id="category">
       <option value="sfw">SFW</option>
       <option value="mixednsfw">Mixed NSFW</option>
-      <option value="dontworrynsfw">Worry NSFW</option>
+      <option value="dontworrynsfw">Don’t worry NSFW</option>
     </select>
     <label>Question Type:</label>
     <select id="qtype">
@@ -68,7 +116,14 @@ let numPlayers = 5;
 let numImposters = 1;
 let category = "sfw";
 let qtype = "number";
-let step = "playerQuestion"; // game state
+let step = "playerQuestion";
+
+// Change accent color based on category
+const categoryColors = {
+  sfw: '#1e88e5',          // blue
+  mixednsfw: '#e53935',    // red
+  dontworrynsfw: '#fbc02d' // yellow
+};
 
 fetch('questions.json')
   .then(res => res.json())
@@ -79,6 +134,12 @@ const questionEl = document.getElementById('questionText');
 const mainButton = document.getElementById('mainButton');
 const resultsEl = document.getElementById('results');
 const resultsContent = document.getElementById('resultsContent');
+const categoryEl = document.getElementById('category');
+
+categoryEl.addEventListener('change', ()=>{
+  let c = categoryEl.value;
+  document.documentElement.style.setProperty('--accent-color', categoryColors[c]);
+});
 
 document.getElementById('start').addEventListener('click', () => {
   numPlayers = parseInt(document.getElementById('players').value);
@@ -142,22 +203,29 @@ mainButton.addEventListener('click', ()=>{
       } else {
         step = "stateAnswers";
         instructionsEl.textContent = "All players have seen their questions. Discuss and state your answers aloud.";
-        mainButton.textContent = "Reveal Real Questions";
+        mainButton.textContent = "Reveal Real Question";
       }
     }
   } else if(step==="stateAnswers"){
-    // Reveal real questions
-    let content = "<strong>Real Questions:</strong><br>";
-    players.forEach((p,i)=>{content += `Player ${i+1}: ${p.real}<br>`;});
+    // Reveal only the real question
+    let content = "<strong>Real Question:</strong><br>";
+    content += players[0].real + "<br>"; // all real questions are the same
     resultsContent.innerHTML = content;
     resultsEl.classList.remove('hidden');
     step = "revealImposter";
-    instructionsEl.textContent = "These are the real questions. Now reveal the imposter question(s).";
+    instructionsEl.textContent = "Now reveal the imposter question(s).";
     mainButton.textContent = "Reveal Imposter Question(s)";
   } else if(step==="revealImposter"){
-    let content = "<strong>Imposter Questions:</strong><br>";
-    players.forEach((p,i)=>{if(p.isImposter) content += `Player ${i+1} (Imposter): ${p.imposter}<br>`;});
-    resultsContent.innerHTML += content;
+    let imposters = players.filter(p=>p.isImposter);
+    if(imposters.length > 0){
+      let content = "<strong>Imposter Question(s):</strong><br>";
+      imposters.forEach(p=>{
+        content += p.imposter + "<br>";
+      });
+      resultsContent.innerHTML += "<br>" + content;
+    } else {
+      resultsContent.innerHTML += "<br><strong>No imposters this round.</strong>";
+    }
     instructionsEl.textContent = "Game over! Discuss who the imposter was and share your original questions.";
     mainButton.textContent = "Done";
     step = "done";
