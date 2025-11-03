@@ -113,5 +113,9 @@
     {"real": "How would you answer a scam call", "imposter": "How would you open a sexting conversation" },
     {"real": "If you were forced to fuck someone around you who would it be", "imposter": "Who around you jerked off today (all that apply)" },
     {"real": "If you had to set a bomb off somewhere populated, where would it be", "imposter": "Whats your favorite government building" }
+    {"real": "Describe a dildo", "imposter": "Describe a pencil" }
+    {"real": "Describe a doorhandle", "imposter": "Describe a dildo" }
+    {"real": "Describe a pedo", "imposter": "Describe a friend" }
+    {"real": "Describe a dream date", "imposter": "Describe a dog or cat" }
   ]
 }
